@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1450" viewBox="0 0 1800 1450">
+<defs>
+<style>
+.title{font:700 28px Arial,sans-serif;fill:#172033}.subtitle{font:700 18px Arial,sans-serif;fill:#1e3a8a}.label{font:15px Arial,sans-serif;fill:#172033;text-anchor:middle}.actor-label{font:700 16px Arial,sans-serif;fill:#172033;text-anchor:middle}.boundary{fill:#f8fafc;stroke:#334155;stroke-width:3}.zone{fill:#eff6ff;stroke:#bfdbfe;stroke-width:1.5}.uc{fill:#fff;stroke:#2563eb;stroke-width:2}.actor{fill:none;stroke:#0f172a;stroke-width:3;stroke-linecap:round}.assoc{stroke:#64748b;stroke-width:2;fill:none}.include{stroke:#64748b;stroke-width:1.5;fill:none;stroke-dasharray:7 5}.inc{font:12px Arial,sans-serif;fill:#475569}
+</style>
+<marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#64748b"/></marker>
+</defs>
+<rect width="1800" height="1450" fill="#fff"/>
+<text x="900" y="42" class="title" text-anchor="middle">Use Case Diagram Sistem WebGIS Pemetaan Kawasan Hijau UAD</text>
+<rect x="270" y="80" width="1260" height="1300" rx="10" class="boundary"/>
+<text x="900" y="115" class="title" text-anchor="middle" font-size="22">Sistem WebGIS Pemetaan Kawasan Hijau UAD</text>
+
+<!-- Zona dipisah agar koneksi aktor tidak melewati use case lain -->
+<rect x="315" y="145" width="510" height="1170" rx="8" class="zone"/>
+<rect x="875" y="145" width="610" height="1170" rx="8" class="zone"/>
+<text x="570" y="178" class="subtitle" text-anchor="middle">Fungsi Pengunjung dan Pengguna</text>
+<text x="1180" y="178" class="subtitle" text-anchor="middle">Fungsi Pengurus dan Administrator</text>
+
+<!-- Aktor kiri -->
+<g transform="translate(120 250)"><circle cy="-38" r="20" class="actor"/><path d="M0 -18V42M-34 5H34M0 42L-28 82M0 42L28 82" class="actor"/><text y="115" class="actor-label">Pengunjung</text></g>
+<g transform="translate(120 760)"><circle cy="-38" r="20" class="actor"/><path d="M0 -18V42M-34 5H34M0 42L-28 82M0 42L28 82" class="actor"/><text y="115" class="actor-label">Pengguna / Civitas</text></g>
+<!-- Aktor kanan -->
+<g transform="translate(1680 430)"><circle cy="-38" r="20" class="actor"/><path d="M0 -18V42M-34 5H34M0 42L-28 82M0 42L28 82" class="actor"/><text y="115" class="actor-label">Pengurus Lingkungan</text></g>
+<g transform="translate(1680 950)"><circle cy="-38" r="20" class="actor"/><path d="M0 -18V42M-34 5H34M0 42L-28 82M0 42L28 82" class="actor"/><text y="115" class="actor-label">Administrator</text></g>
+
+<!-- Use case kolom kiri -->
+<g>
+<ellipse cx="570" cy="240" rx="145" ry="32" class="uc"/><text x="570" y="246" class="label">Melihat Landing Page</text>
+<ellipse cx="570" cy="330" rx="90" ry="32" class="uc"/><text x="570" y="336" class="label">Login</text>
+<ellipse cx="570" cy="445" rx="135" ry="32" class="uc"/><text x="570" y="439" class="label"><tspan x="570">Melihat Peta</tspan><tspan x="570" dy="19">WebGIS</tspan></text>
+<ellipse cx="570" cy="555" rx="145" ry="32" class="uc"/><text x="570" y="549" class="label"><tspan x="570">Analisis Kawasan</tspan><tspan x="570" dy="19">Hijau</tspan></text>
+<ellipse cx="570" cy="665" rx="145" ry="32" class="uc"/><text x="570" y="659" class="label"><tspan x="570">Rekomendasi</tspan><tspan x="570" dy="19">Kawasan</tspan></text>
+<ellipse cx="570" cy="775" rx="135" ry="32" class="uc"/><text x="570" y="781" class="label">Mengirim Feedback</text>
+<ellipse cx="570" cy="885" rx="145" ry="32" class="uc"/><text x="570" y="879" class="label"><tspan x="570">Melihat Feedback</tspan><tspan x="570" dy="19">Milik Sendiri</tspan></text>
+<ellipse cx="570" cy="995" rx="135" ry="32" class="uc"/><text x="570" y="1001" class="label">Mengelola Profil</text>
+<ellipse cx="570" cy="1105" rx="85" ry="32" class="uc"/><text x="570" y="1111" class="label">Logout</text>
+</g>
+
+<!-- Use case kolom kanan -->
+<g>
+<ellipse cx="1180" cy="240" rx="145" ry="32" class="uc"/><text x="1180" y="234" class="label"><tspan x="1180">Melihat Seluruh</tspan><tspan x="1180" dy="19">Feedback</tspan></text>
+<ellipse cx="1180" cy="350" rx="150" ry="32" class="uc"/><text x="1180" y="344" class="label"><tspan x="1180">Mengubah Status</tspan><tspan x="1180" dy="19">Feedback</tspan></text>
+<ellipse cx="1180" cy="490" rx="145" ry="32" class="uc"/><text x="1180" y="484" class="label"><tspan x="1180">Mengelola Data</tspan><tspan x="1180" dy="19">Pengguna</tspan></text>
+<ellipse cx="1180" cy="600" rx="135" ry="32" class="uc"/><text x="1180" y="606" class="label">Mengelola Kampus</text>
+<ellipse cx="1180" cy="710" rx="155" ry="32" class="uc"/><text x="1180" y="704" class="label"><tspan x="1180">Mengelola Kategori</tspan><tspan x="1180" dy="19">Lahan</tspan></text>
+<ellipse cx="1180" cy="820" rx="150" ry="32" class="uc"/><text x="1180" y="814" class="label"><tspan x="1180">Mengelola Data</tspan><tspan x="1180" dy="19">Spasial</tspan></text>
+<ellipse cx="1180" cy="930" rx="135" ry="32" class="uc"/><text x="1180" y="924" class="label"><tspan x="1180">Import Data</tspan><tspan x="1180" dy="19">GeoJSON</tspan></text>
+<ellipse cx="1180" cy="1040" rx="150" ry="32" class="uc"/><text x="1180" y="1034" class="label"><tspan x="1180">Mengelola Rencana</tspan><tspan x="1180" dy="19">Spasial</tspan></text>
+<ellipse cx="1180" cy="1150" rx="145" ry="32" class="uc"/><text x="1180" y="1144" class="label"><tspan x="1180">Menyetujui Rencana</tspan><tspan x="1180" dy="19">Spasial</tspan></text>
+<ellipse cx="1180" cy="1260" rx="140" ry="32" class="uc"/><text x="1180" y="1254" class="label"><tspan x="1180">Activity Log dan</tspan><tspan x="1180" dy="19">Export Data</tspan></text>
+</g>
+
+<!-- Asosiasi kiri: semua garis masuk dari sisi kiri zona -->
+<path d="M155 212H425" class="assoc"/><path d="M155 250H480" class="assoc"/>
+<path d="M155 722H350V445H435" class="assoc"/><path d="M350 555H425" class="assoc"/><path d="M350 665H425" class="assoc"/><path d="M350 775H435" class="assoc"/><path d="M350 885H425" class="assoc"/><path d="M350 995H435" class="assoc"/><path d="M350 1105H485" class="assoc"/>
+<!-- Asosiasi kanan: semua garis masuk dari sisi kanan zona -->
+<path d="M1645 392H1455" class="assoc"/><path d="M1645 430H1430" class="assoc"/>
+<path d="M1645 912H1500V490H1325" class="assoc"/><path d="M1500 600H1315" class="assoc"/><path d="M1500 710H1335" class="assoc"/><path d="M1500 820H1330" class="assoc"/><path d="M1500 930H1315" class="assoc"/><path d="M1500 1040H1330" class="assoc"/><path d="M1500 1150H1325" class="assoc"/><path d="M1500 1260H1320" class="assoc"/>
+<!-- Include untuk validasi data spasial -->
+<path d="M1030 820H1000V930H1045" class="include" marker-end="url(#arrow)"/><text x="955" y="875" class="inc">&lt;&lt;include&gt;&gt; validasi</text>
+</svg>

@@ -1,0 +1,369 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ─────────────────────────── */
+:root {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  --color-green-primary: #10b981;
+  --color-green-dark: #065f46;
+  --color-green-light: #d1fae5;
+  --color-amber: #f59e0b;
+  --color-red: #ef4444;
+  --color-slate-50: #f8fafc;
+  --color-slate-900: #0f172a;
+}
+
+/* ─── Base ───────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-slate-50);
+  color: var(--color-slate-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.dark body {
+  background-color: #0b0f19;
+  color: #f1f5f9;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* ─── Leaflet Overrides ──────────────────────── */
+.leaflet-container {
+  font-family: var(--font-sans) !important;
+  border-radius: 0.75rem;
+}
+
+/* Dark Mode Leaflet Basemap Filter (100% free, zero API key required) */
+.dark .leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.75rem !important;
+  padding: 0 !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+  @apply bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 border border-transparent dark:border-slate-800;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+}
+
+.leaflet-popup-tip {
+  @apply bg-white dark:bg-slate-900 !important;
+}
+
+/* Dark Mode Leaflet Controls (Zoom, Draw, Attribution) */
+.dark .leaflet-control-zoom a,
+.dark .leaflet-draw-toolbar a {
+  @apply bg-slate-900 text-slate-200 border-slate-700 hover:bg-slate-800 hover:text-white !important;
+}
+
+.dark .leaflet-control-zoom a.leaflet-disabled,
+.dark .leaflet-draw-toolbar a.leaflet-disabled {
+  @apply bg-slate-950 text-slate-600 border-slate-800 !important;
+}
+
+.dark .leaflet-control-attribution {
+  @apply bg-slate-950/85 text-slate-400 border-slate-800 !important;
+}
+
+.dark .leaflet-control-attribution a {
+  @apply text-emerald-400 hover:underline !important;
+}
+
+.dark .leaflet-control-scale-line {
+  @apply bg-slate-900/80 text-slate-300 border-slate-600 !important;
+}
+
+/* Dark Mode Leaflet Tooltip */
+.dark .leaflet-tooltip {
+  @apply bg-slate-900 text-slate-100 border-slate-700 shadow-lg !important;
+}
+
+.dark .leaflet-tooltip-top:before {
+  border-top-color: #0f172a !important;
+}
+.dark .leaflet-tooltip-bottom:before {
+  border-bottom-color: #0f172a !important;
+}
+.dark .leaflet-tooltip-left:before {
+  border-left-color: #0f172a !important;
+}
+.dark .leaflet-tooltip-right:before {
+  border-right-color: #0f172a !important;
+}
+
+/* ─── Leaflet Selection Highlight Outline ───────────── */
+.highlight-polygon-outline {
+  stroke-dasharray: 8, 6;
+  animation: mapOutlineDash 1.2s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.9));
+}
+
+@keyframes mapOutlineDash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+/* ─── Simulated Spatial Polygon Animation ───────────── */
+.simulated-polygon-pulse {
+  animation: simulatedPulse 2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 6px rgba(14, 165, 233, 0.7));
+}
+
+@keyframes simulatedPulse {
+  from {
+    fill-opacity: 0.6;
+    stroke-opacity: 0.8;
+  }
+  to {
+    fill-opacity: 0.95;
+    stroke-opacity: 1;
+  }
+}
+
+/* ─── Dimension & Segment Length Badges on Map ──────── */
+.segment-length-badge {
+  background: transparent !important;
+  border: none !important;
+}
+
+.segment-length-badge > span {
+  display: inline-flex;
+  align-items: center;
+  padding: 1.5px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%);
+  user-select: none;
+  pointer-events: none;
+  @apply bg-white/95 text-slate-800 border border-slate-300 dark:bg-slate-900/95 dark:text-slate-100 dark:border-slate-700;
+}
+
+/* ─── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-slate-100 dark:bg-slate-900;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 dark:bg-slate-700 rounded;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400 dark:bg-slate-600;
+}
+
+/* ─── Sidebar ────────────────────────────────── */
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-slate-600 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-400;
+}
+
+.sidebar-link.active {
+  @apply bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-semibold border-l-4 border-emerald-600 dark:border-emerald-500 rounded-l-none pl-3;
+}
+
+.sidebar-link .icon {
+  @apply w-5 h-5 flex-shrink-0;
+}
+
+/* ─── Card ───────────────────────────────────── */
+.card {
+  @apply bg-white dark:bg-slate-900/90 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm dark:shadow-slate-950/50 transition-colors duration-200;
+}
+
+/* ─── Stat Card ──────────────────────────────── */
+.stat-card {
+  @apply card p-5 flex flex-col gap-2;
+}
+
+/* ─── Badge ──────────────────────────────────── */
+.badge {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+}
+
+.badge-green {
+  @apply badge bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800;
+}
+
+.badge-lime {
+  @apply badge bg-lime-100 dark:bg-lime-950/70 text-lime-800 dark:text-lime-300 border border-lime-200 dark:border-lime-800;
+}
+
+.badge-slate {
+  @apply badge bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700;
+}
+
+.badge-amber {
+  @apply badge bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800;
+}
+
+.badge-red {
+  @apply badge bg-red-100 dark:bg-red-950/70 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800;
+}
+
+.badge-blue {
+  @apply badge bg-sky-100 dark:bg-sky-950/70 text-sky-800 dark:text-sky-300 border border-sky-200 dark:border-sky-800;
+}
+
+/* ─── Button ──────────────────────────────────── */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply btn bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 shadow-sm shadow-emerald-600/20 dark:shadow-emerald-900/40;
+}
+
+.btn-secondary {
+  @apply btn bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/70 focus:ring-gray-400 dark:focus:ring-slate-500;
+}
+
+.btn-danger {
+  @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}
+
+.btn-ghost {
+  @apply btn text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 focus:ring-gray-400;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-xs rounded-lg;
+}
+
+/* ─── Form ───────────────────────────────────── */
+.form-label {
+  @apply block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1;
+}
+
+.form-input {
+  @apply w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800/90 px-3.5 py-2.5 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 shadow-sm transition focus:border-emerald-500 dark:focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30;
+}
+
+.form-input-error {
+  @apply border-red-400 dark:border-red-500 focus:border-red-500 focus:ring-red-500/30;
+}
+
+.form-error {
+  @apply text-xs text-red-600 dark:text-red-400 mt-1 font-medium;
+}
+
+.form-select {
+  @apply form-input appearance-none bg-no-repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+  padding-right: 2.5rem;
+}
+
+.form-textarea {
+  @apply form-input resize-none;
+}
+
+/* ─── Table ──────────────────────────────────── */
+.data-table {
+  @apply w-full text-sm text-left;
+}
+
+.data-table thead th {
+  @apply px-4 py-3.5 text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide bg-gray-50 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700/80;
+}
+
+.data-table tbody tr {
+  @apply border-b border-gray-100 dark:border-slate-800/80 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors;
+}
+
+.data-table tbody td {
+  @apply px-4 py-3.5 text-gray-700 dark:text-slate-300;
+}
+
+/* ─── Alert ──────────────────────────────────── */
+.alert {
+  @apply flex items-start gap-3 p-4 rounded-2xl text-sm font-medium border;
+}
+
+.alert-warning {
+  @apply alert bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300;
+}
+
+.alert-success {
+  @apply alert bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300;
+}
+
+.alert-danger {
+  @apply alert bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/60 text-red-800 dark:text-red-300;
+}
+
+.alert-info {
+  @apply alert bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-800/60 text-sky-800 dark:text-sky-300;
+}
+
+/* ─── Progress Bar ───────────────────────────── */
+.progress-bar {
+  @apply h-2.5 rounded-full bg-gray-200 dark:bg-slate-800 overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full rounded-full transition-all duration-700;
+}
+
+/* ─── Page header ────────────────────────────── */
+.page-header {
+  @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6;
+}
+
+.page-title {
+  @apply text-xl font-bold text-gray-900 dark:text-slate-100;
+}
+
+.page-subtitle {
+  @apply text-sm text-gray-500 dark:text-slate-400 mt-0.5;
+}
+
+/* ─── Animations ─────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.pulse-green {
+  animation: pulse-green 2s infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
