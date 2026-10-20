@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useForm, Head, Link } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
-
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
-import Textarea from '@/components/ui/Textarea';
-import LeafletDrawMap from '@/components/map/LeafletDrawMap';
-import GeoJsonUploader from '@/components/map/GeoJsonUploader';
+import Button from '@/Components/ui/Button';
+import Input from '@/Components/ui/Input';
+import Select from '@/Components/ui/Select';
+import Textarea from '@/Components/ui/Textarea';
+import LeafletDrawMap from '@/Components/map/LeafletDrawMap';
+import GeoJsonUploader from '@/Components/map/GeoJsonUploader';
+import PageHeader from '@/Components/PageHeader';
 import {
-    ArrowLeft, Save, MapPin, Layers, Info, Upload,
+    Save, MapPin, Layers, Info, Upload,
     Sparkles, Download, FileCode, CheckCircle2
 } from 'lucide-react';
 
@@ -144,22 +144,17 @@ export default function LandUseCreate({
 
             <div className="max-w-5xl mx-auto space-y-5">
 
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Link href="/land-uses" className="btn btn-ghost btn-sm p-2 text-gray-500 dark:text-slate-400">
-                            <ArrowLeft className="w-4 h-4" />
+                <PageHeader
+                    title="Tambah Objek Penggunaan Lahan"
+                    description="Gambar langsung di peta atau unggah file GeoJSON hasil rancangan QGIS"
+                    backHref="/land-uses"
+                    actions={
+                        <Link href="/land-uses/import" className="btn btn-secondary btn-sm hidden sm:inline-flex">
+                            <Upload className="w-3.5 h-3.5" />
+                            Batch Import GeoJSON
                         </Link>
-                        <div>
-                            <h1 className="page-title text-xl">Tambah Objek Penggunaan Lahan</h1>
-                            <p className="page-subtitle">Gambar langsung di peta atau unggah file GeoJSON hasil rancangan QGIS</p>
-                        </div>
-                    </div>
-
-                    <Link href="/land-uses/import" className="btn btn-secondary btn-sm hidden sm:inline-flex">
-                        <Upload className="w-3.5 h-3.5" />
-                        Batch Import GeoJSON
-                    </Link>
-                </div>
+                    }
+                />
 
                 <div className="card p-6 space-y-6">
                     {/* 1. Pilih Kampus & Kategori */}

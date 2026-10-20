@@ -25,6 +25,7 @@ export default function SpatialPlansShow({
     plan,
     planGeoJson = null,
     campusBoundary = null,
+    campusAnalysis = null,
     isAdmin = false,
 }) {
     const mapContainerRef = useRef(null);
@@ -252,12 +253,67 @@ export default function SpatialPlansShow({
                             </div>
 
                             <div className="card p-4 text-center">
-                                <span className="text-[11px] text-gray-500 dark:text-slate-400 block font-medium">Kontribusi RTH</span>
+                                <span className="text-[11px] text-gray-500 dark:text-slate-400 block font-medium">
+                                    {plan.pillar_type === 'conservation' ? 'Proteksi RTH' : 'Potensi Tambahan RTH'}
+                                </span>
                                 <span className="text-base font-bold text-sky-600 dark:text-sky-400 mt-0.5 block font-mono">
-                                    +{plan.potential_gain_percent || 0}%
+                                    {plan.pillar_type === 'conservation'
+                                        ? `${plan.potential_gain_percent || 0}% Kampus`
+                                        : `+${plan.potential_gain_percent || 0}%`}
                                 </span>
                             </div>
                         </div>
+
+                        {/* Campus RTH Target & Deficit Context */}
+                        {campusAnalysis && (
+                            <div className="card p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200/70 dark:border-emerald-800/50 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+                                        <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                        Konteks Target 30% RTH Kampus ({plan.campus?.name})
+                                    </span>
+                                    <span className={`badge text-[10px] ${campusAnalysis.is_achieved ? 'badge-green' : 'badge-amber'}`}>
+                                        {campusAnalysis.is_achieved ? 'Target 30% Terpenuhi' : `Defisit ${campusAnalysis.gap_percentage}%`}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                    <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[10px] text-gray-400 dark:text-slate-500 block">RTH Kampus Saat Ini</span>
+                                        <span className="font-bold text-gray-900 dark:text-slate-100">{campusAnalysis.green_percentage}%</span>
+                                        <span className="text-[10px] text-gray-500 dark:text-slate-400 block">({formatArea(campusAnalysis.green_area_size)})</span>
+                                    </div>
+                                    <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[10px] text-gray-400 dark:text-slate-500 block">Target Minimum 30%</span>
+                                        <span className="font-bold text-gray-900 dark:text-slate-100">30.0%</span>
+                                        <span className="text-[10px] text-gray-500 dark:text-slate-400 block">({formatArea(campusAnalysis.target_area)})</span>
+                                    </div>
+                                    <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800">
+                                        <span className="text-[10px] text-gray-400 dark:text-slate-500 block">Defisit RTH</span>
+                                        <span className={`font-bold ${campusAnalysis.is_achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                                            {campusAnalysis.is_achieved ? '0 m²' : formatArea(campusAnalysis.gap_area_size)}
+                                        </span>
+                                        <span className="text-[10px] text-gray-500 dark:text-slate-400 block">
+                                            {campusAnalysis.is_achieved ? 'Standar terpenuhi' : `Kurang ${campusAnalysis.gap_percentage}%`}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <p className="text-[11px] text-gray-600 dark:text-slate-300 leading-relaxed">
+                                    {plan.pillar_type === 'conservation' ? (
+                                        <>Rencana konservasi ini memproteksi <strong>{formatArea(plan.area_size)}</strong> kawasan hijau ({plan.potential_gain_percent}% luas kampus) agar tidak terjadi degradasi atau alih fungsi ke area terbangun.</>
+                                    ) : !campusAnalysis.is_achieved && campusAnalysis.gap_area_size > 0 ? (
+                                        (plan.area_size / campusAnalysis.gap_area_size) >= 1 ? (
+                                            <>Dengan luasan <strong>{formatArea(plan.area_size)}</strong> (+{plan.potential_gain_percent}%), rencana ini berpotensi <strong>menutup 100% defisit RTH kampus</strong> (target 30% langsung tercapai).</>
+                                        ) : (
+                                            <>Dengan luasan <strong>{formatArea(plan.area_size)}</strong> (+{plan.potential_gain_percent}%), rencana ini berpotensi menutup <strong>{((plan.area_size / campusAnalysis.gap_area_size) * 100).toFixed(1)}%</strong> dari total defisit RTH kampus.</>
+                                        )
+                                    ) : (
+                                        <>Rencana ini berkontribusi menambah <strong>{formatArea(plan.area_size)}</strong> (+{plan.potential_gain_percent}%) kawasan hijau untuk memperkuat ketahanan ekologis kampus.</>
+                                    )}
+                                </p>
+                            </div>
+                        )}
 
                         {/* Description & Action Plan */}
                         <div className="card p-6 space-y-4">

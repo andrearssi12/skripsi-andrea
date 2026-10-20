@@ -1,6 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from '@inertiajs/react';
-import { Layers, Trees, MessageSquare } from 'lucide-react';
+import { Layers, Trees, Sprout, MessageSquare } from 'lucide-react';
 import { formatArea, formatDate, getFeedbackStatusBadge } from '@/lib/utils';
 
 export default function AnalysisSection({
@@ -9,11 +9,28 @@ export default function AnalysisSection({
     recentFeedback = [],
     selectedCampus,
     greenPercent,
-    targetPercent,
+    vegetatedPercent,
+    targetPercent = 30,
     gapPercent,
     isAchieved,
     user,
 }) {
+    const campusArea = selectedCampus?.total_area || analysis.total_campus_area || 0;
+    const greenSize = analysis.green_area_size || 0;
+    const nonRthSize = analysis.vegetasi_non_rth_size || 0;
+    const totalVegSize = analysis.total_vegetated_size || (greenSize + nonRthSize);
+    const vegPercent = Number(
+        vegetatedPercent ??
+            analysis.vegetated_percentage ??
+            (campusArea > 0 ? ((totalVegSize / campusArea) * 100).toFixed(2) : 0),
+    );
+    const pureGreenPercent = Number(greenPercent ?? analysis.green_percentage ?? 0);
+    const nonRthPercent = Number(Math.max(0, vegPercent - pureGreenPercent).toFixed(2));
+    const targetArea = analysis.target_area || (campusArea * (targetPercent / 100));
+    const totalVegDeficit = Math.max(0, targetArea - totalVegSize);
+    const totalVegDeficitPercent = Math.max(0, Number((targetPercent - vegPercent).toFixed(2)));
+    const isTotalAchieved = vegPercent >= targetPercent;
+
     return (
         <section id="analisis" className="bg-white dark:bg-slate-900 py-16 border-t border-gray-200/60 dark:border-slate-800 transition-colors">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-14">
@@ -26,39 +43,104 @@ export default function AnalysisSection({
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* 30% meter */}
-                    <div className={`p-6 rounded-3xl border flex flex-col gap-5 ${
-                        isAchieved
-                            ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
-                            : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60'
+                    {/* 30% meter - Total Vegetasi */}
+                    <div className={`p-6 rounded-3xl border flex flex-col justify-between gap-5 ${
+                        isTotalAchieved
+                            ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60'
+                            : 'bg-amber-50/80 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/60'
                     }`}>
-                        <div className="flex items-center justify-between">
-                            <span className="badge badge-green font-bold text-xs">Standar 30% RTH</span>
-                            <span className={`badge ${isAchieved ? 'badge-green' : 'badge-amber'} text-xs`}>{analysis.status_text}</span>
-                        </div>
-                        <div>
-                            <span className="text-5xl font-extrabold font-display text-gray-900 dark:text-slate-100">{greenPercent}%</span>
-                            <p className="text-xs text-gray-600 dark:text-slate-300 mt-2 leading-relaxed">
-                                {isAchieved
-                                    ? 'Proporsi kawasan hijau telah memenuhi standar minimal 30% luas kampus.'
-                                    : `Perlu penambahan ±${formatArea(analysis.gap_area_size)} (${gapPercent}%) untuk memenuhi standar 30%.`
-                                }
-                            </p>
-                        </div>
-                        <div className="space-y-1.5">
-                            <div className="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                                <div
-                                    className={`h-full rounded-full transition-all duration-1000 ${isAchieved ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                                    style={{ width: `${Math.min(100, (greenPercent / targetPercent) * 100)}%` }}
-                                />
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="badge badge-green font-bold text-xs">
+                                    Standar 30% Vegetasi & RTH
+                                </span>
+                                <span className={`badge ${isTotalAchieved ? 'badge-green' : 'badge-amber'} text-xs font-semibold`}>
+                                    {isTotalAchieved ? 'Target Terpenuhi' : 'Belum Memenuhi Target'}
+                                </span>
                             </div>
-                            <div className="flex justify-between text-[10px] text-gray-400 dark:text-slate-500 font-medium">
-                                <span>0%</span><span>Target 30%</span><span>100%</span>
+
+                            <div>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-5xl font-extrabold font-display text-gray-900 dark:text-slate-100">
+                                        {vegPercent}%
+                                    </span>
+                                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide">
+                                        Total Vegetasi
+                                    </span>
+                                </div>
+                                <p className="text-xs text-gray-600 dark:text-slate-300 mt-2 leading-relaxed">
+                                    {isTotalAchieved
+                                        ? `Total luasan bervegetasi (${formatArea(totalVegSize)}) telah melampaui target standar 30% luas kampus.`
+                                        : `Total luasan bervegetasi saat ini ${formatArea(totalVegSize)} (${vegPercent}%). Perlu penambahan ±${formatArea(totalVegDeficit)} (${totalVegDeficitPercent}%) untuk mencapai target minimal 30%.`
+                                    }
+                                </p>
+                            </div>
+
+                            {/* Breakdown RTH vs Non-RTH */}
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-gray-200/60 dark:border-slate-700/60">
+                                    <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold mb-1">
+                                        <Trees className="w-3.5 h-3.5" />
+                                        <span>RTH (Green Area)</span>
+                                    </div>
+                                    <div className="text-base font-extrabold text-gray-900 dark:text-slate-100">
+                                        {pureGreenPercent}%
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 dark:text-slate-400">
+                                        {formatArea(greenSize)}
+                                    </div>
+                                </div>
+
+                                <div className="p-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-gray-200/60 dark:border-slate-700/60">
+                                    <div className="flex items-center gap-1.5 text-lime-700 dark:text-lime-400 font-semibold mb-1">
+                                        <Sprout className="w-3.5 h-3.5" />
+                                        <span>Vegetasi Non-RTH</span>
+                                    </div>
+                                    <div className="text-base font-extrabold text-gray-900 dark:text-slate-100">
+                                        {nonRthPercent}%
+                                    </div>
+                                    <div className="text-[10px] text-gray-500 dark:text-slate-400">
+                                        {formatArea(nonRthSize)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Stacked Progress Bar */}
+                            <div className="space-y-1.5 pt-1">
+                                <div className="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden relative flex">
+                                    {/* 30% Marker line */}
+                                    <div
+                                        className="absolute top-0 bottom-0 left-[30%] w-0.5 bg-amber-600 dark:bg-amber-400 z-10"
+                                        title="Target 30%"
+                                    />
+                                    {/* Segment 1: Green Area (RTH) */}
+                                    <div
+                                        className="h-full bg-emerald-500 transition-all duration-1000"
+                                        style={{ width: `${Math.min(100, pureGreenPercent)}%` }}
+                                        title={`RTH: ${pureGreenPercent}%`}
+                                    />
+                                    {/* Segment 2: Vegetasi Non-RTH */}
+                                    <div
+                                        className="h-full bg-lime-400 transition-all duration-1000"
+                                        style={{ width: `${Math.min(100 - pureGreenPercent, nonRthPercent)}%` }}
+                                        title={`Vegetasi Non-RTH: ${nonRthPercent}%`}
+                                    />
+                                </div>
+                                <div className="flex justify-between items-center text-[10px] text-gray-500 dark:text-slate-400 font-medium">
+                                    <span className="flex items-center gap-1">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> RTH ({pureGreenPercent}%)
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <span className="w-2 h-2 rounded-full bg-lime-400 inline-block" /> Non-RTH ({nonRthPercent}%)
+                                    </span>
+                                    <span className="font-semibold text-amber-600 dark:text-amber-400">Target 30%</span>
+                                </div>
                             </div>
                         </div>
-                        <div className="text-xs border-t border-current/10 pt-3 text-gray-700 dark:text-slate-300">
-                            <span className="font-bold">Total Luas Kampus:</span>
-                            <span className="ml-1.5 font-semibold">{formatArea(selectedCampus?.total_area)}</span>
+
+                        <div className="text-xs border-t border-current/10 pt-3 text-gray-700 dark:text-slate-300 flex justify-between items-center">
+                            <span><strong>Total Kampus:</strong> {formatArea(campusArea)}</span>
+                            <span><strong>Target 30%:</strong> {formatArea(targetArea)}</span>
                         </div>
                     </div>
 

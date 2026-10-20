@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from '@inertiajs/react';
 import { Building2, Trees, Sprout, MessageSquare, Sparkles, ArrowRight, ChevronRight } from 'lucide-react';
 import { formatArea, formatDate, getFeedbackStatusBadge } from '@/lib/utils';
@@ -40,7 +40,7 @@ export default function OverviewTab({
 
                 <div className="stat-card">
                     <div className="flex items-center justify-between text-gray-500 dark:text-slate-400 text-xs font-medium">
-                        <span>Green Area (RTH)</span>
+                        <span>Green Area (RTH Murni)</span>
                         <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                             <Trees className="w-4 h-4" />
                         </div>
@@ -48,10 +48,13 @@ export default function OverviewTab({
                     <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400 font-display">
                         {formatArea(analysis.green_area_size)}
                     </p>
-                    <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                    <div className="flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                         <span className="badge badge-green font-bold">{greenPercent}%</span>
-                        <span>dari luas kampus</span>
+                        <span className="text-[11px] text-gray-500 dark:text-slate-400">dari luas kampus</span>
                     </div>
+                    <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">
+                        Kawasan hijau permanen / RTH terbuka
+                    </p>
                 </div>
 
                 <div className="stat-card">
@@ -64,10 +67,13 @@ export default function OverviewTab({
                     <p className="text-2xl font-bold text-lime-800 dark:text-lime-400 font-display">
                         {formatArea(analysis.total_vegetated_size)}
                     </p>
-                    <div className="flex items-center gap-1.5 text-xs text-lime-800 dark:text-lime-400 font-medium">
+                    <div className="flex items-center justify-between text-xs text-lime-800 dark:text-lime-400 font-medium">
                         <span className="badge badge-lime font-bold">{analysis.vegetated_percentage}%</span>
-                        <span>termasuk non-RTH</span>
+                        <span className="text-[11px] text-gray-500 dark:text-slate-400">RTH + Non-RTH</span>
                     </div>
+                    <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1 truncate" title={`RTH (${formatArea(analysis.green_area_size)}) + Non-RTH (${formatArea(analysis.vegetasi_non_rth_size)})`}>
+                        RTH ({formatArea(analysis.green_area_size)}) + Non-RTH ({formatArea(analysis.vegetasi_non_rth_size)})
+                    </p>
                 </div>
 
                 <div className="stat-card">
@@ -217,6 +223,15 @@ export default function OverviewTab({
                                 </div>
                             </div>
                         ))}
+
+                        <div className="p-2.5 rounded-xl bg-lime-50/70 dark:bg-lime-950/30 border border-lime-200 dark:border-lime-800/60 text-xs flex items-center justify-between">
+                            <span className="font-semibold text-lime-900 dark:text-lime-200">
+                                Total Bervegetasi (RTH + Non-RTH):
+                            </span>
+                            <span className="font-bold text-lime-900 dark:text-lime-100">
+                                {formatArea(analysis.total_vegetated_size)} ({analysis.vegetated_percentage}%)
+                            </span>
+                        </div>
                     </div>
 
                     <div className="pt-3 border-t border-gray-100 dark:border-slate-800 space-y-2">

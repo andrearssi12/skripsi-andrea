@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
-import Button from "@/components/ui/Button";
-
-import Pagination from "@/components/ui/Pagination";
-import EmptyState from "@/components/ui/EmptyState";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import FilterTabs from "@/components/common/FilterTabs";
+import Button from "@/Components/ui/Button";
+import Pagination from "@/Components/ui/Pagination";
+import EmptyState from "@/Components/ui/EmptyState";
+import ConfirmDialog from "@/Components/ui/ConfirmDialog";
+import FilterTabs from "@/Components/common/FilterTabs";
+import PageHeader from "@/Components/PageHeader";
 import { formatArea, formatDate } from "@/lib/utils";
 import {
     Compass,
@@ -37,6 +37,7 @@ export default function SpatialPlansIndex({
     plans = { data: [] },
     counts = {},
     campuses = [],
+    campusAnalysis = {},
     filters = {},
     isAdmin = false,
 }) {
@@ -97,37 +98,70 @@ export default function SpatialPlansIndex({
             <div className="space-y-6">
 
                 {/* Header Section */}
-                <div className="page-header">
-                    <div>
-                        <h1 className="page-title flex items-center gap-2">
-                            <Compass className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                            <span>Rencana Pengembangan Kawasan Hijau</span>
-                        </h1>
-                        <p className="page-subtitle">
-                            {isAdmin
-                                ? "Rancang, gambar polygon interaktif, sesuaikan luasan rekomendasi sistem, dan setujui (ACC) rencana masa depan"
-                                : "Daftar rencana tata ruang hijau resmi kampus yang telah disetujui untuk pengembangan masa depan"}
-                        </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <Link href="/map">
-                            <Button variant="secondary" size="sm">
-                                <MapPin className="w-4 h-4 text-emerald-600" />
-                                <span>Lihat di Peta WebGIS</span>
-                            </Button>
-                        </Link>
-
-                        {isAdmin && (
-                            <Link href={route("spatial-plans.create")}>
-                                <Button variant="primary" size="sm">
-                                    <Plus className="w-4 h-4" />
-                                    <span>Buat Rencana Baru</span>
+                <PageHeader
+                    title="Rencana Pengembangan Kawasan Hijau"
+                    icon={Compass}
+                    description={
+                        isAdmin
+                            ? "Rancang, gambar polygon interaktif, sesuaikan luasan rekomendasi sistem, dan setujui (ACC) rencana masa depan"
+                            : "Daftar rencana tata ruang hijau resmi kampus yang telah disetujui untuk pengembangan masa depan"
+                    }
+                    actions={
+                        <>
+                            <Link href="/map">
+                                <Button variant="secondary" size="sm">
+                                    <MapPin className="w-4 h-4 text-emerald-600" />
+                                    <span>Lihat di Peta WebGIS</span>
                                 </Button>
                             </Link>
-                        )}
+
+                            {isAdmin && (
+                                <Link href={route("spatial-plans.create")}>
+                                    <Button variant="primary" size="sm">
+                                        <Plus className="w-4 h-4" />
+                                        <span>Buat Rencana Baru</span>
+                                    </Button>
+                                </Link>
+                            )}
+                        </>
+                    }
+                />
+
+                {/* RTH Context Banner */}
+                {campusAnalysis && campusAnalysis.total_campus_area > 0 && (
+                    <div className="card p-4 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent border-emerald-500/20">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                                    Target 30% RTH Kampus {campusId ? `(${campuses.find((c) => String(c.id) === String(campusId))?.name})` : "(Seluruh Kampus)"}
+                                </span>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                    <span className="text-xl font-extrabold text-gray-900 dark:text-slate-100 font-display">
+                                        {campusAnalysis.green_percentage}%
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-slate-400">
+                                        ({formatArea(campusAnalysis.green_area_size)} dari {formatArea(campusAnalysis.total_campus_area)})
+                                    </span>
+                                    <span className={`badge text-[10px] ${campusAnalysis.is_achieved ? "badge-green" : "badge-amber"}`}>
+                                        {campusAnalysis.is_achieved ? "Target 30% Terpenuhi" : `Defisit ${campusAnalysis.gap_percentage}% (${formatArea(campusAnalysis.gap_area_size)})`}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs">
+                                <div className="text-right">
+                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 block">Target Minimum 30%</span>
+                                    <span className="font-bold text-gray-800 dark:text-slate-200">{formatArea(campusAnalysis.target_area)}</span>
+                                </div>
+                                <div className="text-right pl-4 border-l border-gray-200 dark:border-slate-800">
+                                    <span className="text-[10px] text-gray-400 dark:text-slate-500 block">Defisit RTH</span>
+                                    <span className={`font-bold ${campusAnalysis.is_achieved ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                                        {campusAnalysis.is_achieved ? "0 m² (Terpenuhi)" : formatArea(campusAnalysis.gap_area_size)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Status Tabs for Admin */}
                 {isAdmin && (
@@ -328,14 +362,36 @@ export default function SpatialPlansIndex({
                                                 0 && (
                                                 <div className="flex items-center justify-between text-[11px]">
                                                     <span>
-                                                        Potensi Kenaikan RTH:
+                                                        {plan.pillar_type === "conservation"
+                                                            ? "Proteksi RTH:"
+                                                            : "Potensi Kenaikan RTH:"}
                                                     </span>
-                                                    <span className="font-bold text-sky-600 dark:text-sky-400">
-                                                        +
-                                                        {
-                                                            plan.potential_gain_percent
-                                                        }
-                                                        %
+                                                    <span
+                                                        className={`font-bold ${
+                                                            plan.pillar_type === "conservation"
+                                                                ? "text-emerald-600 dark:text-emerald-400"
+                                                                : "text-sky-600 dark:text-sky-400"
+                                                        }`}
+                                                    >
+                                                        {plan.pillar_type === "conservation"
+                                                            ? `${plan.potential_gain_percent}% Kampus`
+                                                            : `+${plan.potential_gain_percent}%`}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {plan.pillar_type !== "conservation" &&
+                                                !campusAnalysis?.is_achieved &&
+                                                campusAnalysis?.gap_area_size > 0 &&
+                                                plan.area_size > 0 && (
+                                                <div className="flex items-center justify-between text-[11px]">
+                                                    <span className="text-gray-500 dark:text-slate-400">
+                                                        Penutupan Defisit:
+                                                    </span>
+                                                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                                        {(plan.area_size / campusAnalysis.gap_area_size) >= 1
+                                                            ? "100% (Defisit Terpenuhi)"
+                                                            : `${((plan.area_size / campusAnalysis.gap_area_size) * 100).toFixed(1)}% defisit`}
                                                     </span>
                                                 </div>
                                             )}

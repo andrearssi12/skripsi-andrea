@@ -59,11 +59,14 @@ export default function Dashboard({
     );
 
     const totalArea = analysis.total_campus_area || 1;
-    const currentVegetatedArea =
+    const currentGreenArea = analysis.green_area_size || 0;
+    const currentTotalVegArea =
+        analysis.total_vegetated_size ||
         (analysis.green_area_size || 0) + (analysis.vegetasi_non_rth_size || 0);
+
     const simulatedVegPercent = Number(
         (
-            ((currentVegetatedArea + simulatedAddedArea) / totalArea) *
+            ((currentTotalVegArea + simulatedAddedArea) / totalArea) *
             100
         ).toFixed(2),
     );

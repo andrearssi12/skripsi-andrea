@@ -27,19 +27,30 @@ class LandUseController extends Controller
         $categoryId = $request->query('category_id');
         $greenStatus = $request->query('green_status');
         $condition = $request->query('condition');
+        $status = $request->query('status', 'active'); // 'active' | 'archived'
 
-        $landUses = LandUse::with(['campus', 'category', 'parent'])
+        $baseQuery = LandUse::when($status === 'archived', function ($q) {
+                $q->onlyTrashed();
+            })
+            ->with(['campus', 'category', 'parent'])
             ->when($search, function ($query, $search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%");
+                $query->where(function ($sub) use ($search) {
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
             })
             ->when($campusId, fn ($q) => $q->where('campus_id', $campusId))
             ->when($categoryId, fn ($q) => $q->where('category_id', $categoryId))
             ->when($greenStatus, fn ($q) => $q->where('green_status', $greenStatus))
-            ->when($condition, fn ($q) => $q->where('condition', $condition))
-            ->latest()
+            ->when($condition, fn ($q) => $q->where('condition', $condition));
+
+        $landUses = (clone $baseQuery)
+            ->latest($status === 'archived' ? 'deleted_at' : 'created_at')
             ->paginate(15)
             ->withQueryString();
+
+        $activeCount = LandUse::count();
+        $archivedCount = LandUse::onlyTrashed()->count();
 
         $campuses = Campus::select('id', 'name', 'code', 'boundary_geometry')->get();
         $categories = LandUseCategory::select('id', 'name', 'color')->get();
@@ -48,12 +59,17 @@ class LandUseController extends Controller
             'landUses' => $landUses,
             'campuses' => $campuses,
             'categories' => $categories,
+            'counts' => [
+                'active' => $activeCount,
+                'archived' => $archivedCount,
+            ],
             'filters' => [
                 'search' => $search,
                 'campus_id' => $campusId,
                 'category_id' => $categoryId,
                 'green_status' => $greenStatus,
                 'condition' => $condition,
+                'status' => $status,
             ],
         ]);
     }
@@ -224,13 +240,46 @@ class LandUseController extends Controller
         $resolvedLandUse->delete();
 
         ActivityLogService::log(
-            'delete',
+            'archive',
             'land_use',
-            "Menghapus objek penggunaan lahan '{$name}'",
+            "Mengarsipkan objek penggunaan lahan '{$name}' (ID: {$id})",
             $id
         );
 
-        return redirect()->route('land-uses.index')
-            ->with('success', "Objek lahan '{$name}' berhasil dihapus.");
+        return back()->with('success', "Objek lahan '{$name}' berhasil diarsipkan.");
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $landUse = LandUse::onlyTrashed()->findOrFail($id);
+        $name = $landUse->name;
+
+        $landUse->restore();
+
+        ActivityLogService::log(
+            'restore',
+            'land_use',
+            "Memulihkan objek penggunaan lahan dari arsip '{$name}' (ID: {$id})",
+            $id
+        );
+
+        return back()->with('success', "Objek lahan '{$name}' berhasil dipulihkan dari arsip.");
+    }
+
+    public function forceDelete($id): RedirectResponse
+    {
+        $landUse = LandUse::onlyTrashed()->findOrFail($id);
+        $name = $landUse->name;
+
+        $landUse->forceDelete();
+
+        ActivityLogService::log(
+            'force_delete',
+            'land_use',
+            "Menghapus permanen objek penggunaan lahan '{$name}' (ID: {$id})",
+            $id
+        );
+
+        return back()->with('success', "Objek lahan '{$name}' berhasil dihapus permanen dari sistem.");
     }
 }

@@ -61,11 +61,17 @@ class GreenAreaAnalysisService
             ? 0.0
             : round(($totalCampusArea * ($targetPercentage / 100)) - $greenAreaSize, 2);
 
+        $isVegetatedAchieved = $vegetatedPercentage >= $targetPercentage;
+        $vegetatedGapPercentage = $isVegetatedAchieved ? 0.0 : round($targetPercentage - $vegetatedPercentage, 2);
+        $vegetatedGapAreaSize = $isVegetatedAchieved
+            ? 0.0
+            : round(($totalCampusArea * ($targetPercentage / 100)) - $totalVegetatedSize, 2);
+
         $statusText = $isAchieved ? 'Target Tercapai' : 'Target Belum Tercapai';
 
         // Distribution by category
         $categoryBreakdown = $landUses
-            ->groupBy(fn ($item) => $item->category?->name ?? 'Lainnya')
+            ->groupBy(fn($item) => $item->category?->name ?? 'Lainnya')
             ->map(function (Collection $group, string $categoryName) use ($totalCampusArea) {
                 $categorySum = (float) $group->sum('area_size');
                 $categoryColor = $group->first()?->category?->color ?? '#64748b';
@@ -114,9 +120,13 @@ class GreenAreaAnalysisService
             'green_percentage' => $greenPercentage,
             'vegetated_percentage' => $vegetatedPercentage,
             'target_percentage' => $targetPercentage,
+            'target_area' => round($totalCampusArea * ($targetPercentage / 100), 2),
             'is_achieved' => $isAchieved,
             'gap_percentage' => $gapPercentage,
             'gap_area_size' => max(0, $gapAreaSize),
+            'is_vegetated_achieved' => $isVegetatedAchieved,
+            'vegetated_gap_percentage' => $vegetatedGapPercentage,
+            'vegetated_gap_area_size' => max(0, $vegetatedGapAreaSize),
             'status_text' => $statusText,
             'category_breakdown' => $categoryBreakdown,
             'status_breakdown' => $statusBreakdown,

@@ -69,11 +69,14 @@ class SpatialPlanController extends Controller
         ];
 
         $campuses = Campus::select('id', 'name', 'code')->get();
+        $selectedCampusId = $campusId ? (int) $campusId : null;
+        $campusAnalysis = $this->analysisService->analyze($selectedCampusId);
 
         return Inertia::render('SpatialPlans/Index', [
             'plans' => $plans,
             'counts' => $counts,
             'campuses' => $campuses,
+            'campusAnalysis' => $campusAnalysis,
             'filters' => [
                 'campus_id' => $campusId ? (int) $campusId : null,
                 'status' => $status,
@@ -121,6 +124,7 @@ class SpatialPlanController extends Controller
         return Inertia::render('SpatialPlans/Create', [
             'campuses' => $campuses,
             'selectedCampusId' => $selectedCampusId,
+            'campusAnalysis' => $analysis,
             'recommendationItems' => $recItems,
         ]);
     }
@@ -241,10 +245,13 @@ class SpatialPlanController extends Controller
             ];
         }
 
+        $campusAnalysis = $this->analysisService->analyze($spatialPlan->campus_id);
+
         return Inertia::render('SpatialPlans/Show', [
             'plan' => $spatialPlan,
             'planGeoJson' => $planGeoJson,
             'campusBoundary' => $campusBoundary,
+            'campusAnalysis' => $campusAnalysis,
             'isAdmin' => $isAdmin,
         ]);
     }
@@ -286,6 +293,7 @@ class SpatialPlanController extends Controller
             'plan' => $spatialPlan,
             'effectiveGeometry' => $spatialPlan->effective_geometry,
             'campuses' => $campuses,
+            'campusAnalysis' => $analysis,
             'recommendationItems' => $recItems,
         ]);
     }

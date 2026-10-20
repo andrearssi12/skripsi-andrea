@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Shield, Leaf, Trees, CheckCircle2, Square, CheckSquare, Sparkles } from 'lucide-react';
 import { formatArea } from '@/lib/utils';
 
@@ -63,18 +63,32 @@ export default function SpatialRecCard({
                 {item.action_description}
             </p>
 
-            {!isAchieved && item.gap_coverage_percent > 0 && (
+            {isConservation ? (
                 <div className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[9px] font-bold border border-emerald-200 dark:border-emerald-800">
-                    <span>🎯 Menutup {item.gap_coverage_percent}% Defisit RTH Kampus</span>
+                    <span>🛡️ Menjaga {item.contribution_percent}% Luas Kampus</span>
                 </div>
-            )}
+            ) : !isAchieved && item.gap_coverage_percent > 0 ? (
+                <div className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-100/70 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 text-[9px] font-bold border border-sky-200 dark:border-sky-800">
+                    {item.gap_coverage_percent >= 100 ? (
+                        <span>🎯 Menutup 100% Defisit (Target 30% Terpenuhi)</span>
+                    ) : (
+                        <span>🎯 Menutup {item.gap_coverage_percent}% Defisit RTH Kampus</span>
+                    )}
+                </div>
+            ) : isAchieved ? (
+                <div className="mb-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[9px] font-bold border border-emerald-200 dark:border-emerald-800">
+                    <span>✨ Menambah +{item.potential_gain_percent || item.contribution_percent}% Tutupan Hijau</span>
+                </div>
+            ) : null}
 
             <div className="pt-2 border-t border-gray-100 dark:border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between text-[10px]">
                     <div className="space-x-1.5 text-gray-500 dark:text-slate-400">
                         <span>Luas: <strong>{formatArea(item.area_size)}</strong></span>
                         <span>•</span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">+{item.contribution_percent || item.potential_gain_percent}%</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                            {isConservation ? `${item.contribution_percent}% Kampus` : `+${item.potential_gain_percent || item.contribution_percent}%`}
+                        </span>
                     </div>
                     {!isConservation && onToggleSimulate && (
                         <button

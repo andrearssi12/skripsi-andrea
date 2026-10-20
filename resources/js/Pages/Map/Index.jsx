@@ -95,11 +95,10 @@ export default function MapIndex({
         simulatedLayerIds,
     ]);
 
-    const currentVegArea =
-        (analysis.green_area_size || 0) + (analysis.vegetasi_non_rth_size || 0);
+    const currentGreenArea = analysis.green_area_size || 0;
     const simulatedVegPercent = Number(
         (
-            ((currentVegArea + simulatedAddedArea) / totalCampusArea) *
+            ((currentGreenArea + simulatedAddedArea) / totalCampusArea) *
             100
         ).toFixed(2),
     );

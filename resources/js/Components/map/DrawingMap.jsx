@@ -278,6 +278,9 @@ export default function DrawingMap({
                 });
 
             if (features.length > 0) {
+                // Sort by area_size descending so smaller polygons are added last and render on top
+                features.sort((a, b) => ((b.properties?.area_size || 0) - (a.properties?.area_size || 0)));
+
                 const luLayer = L.geoJSON({ type: 'FeatureCollection', features }, {
                     style: (feat) => ({
                         color: feat.properties.category_color || '#94a3b8',

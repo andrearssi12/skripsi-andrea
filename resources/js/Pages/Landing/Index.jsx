@@ -291,6 +291,7 @@ export default function Landing({
                 recentFeedback={recentFeedback}
                 selectedCampus={selectedCampus}
                 greenPercent={greenPercent}
+                vegetatedPercent={vegetatedPercent}
                 targetPercent={targetPercent}
                 gapPercent={gapPercent}
                 isAchieved={isAchieved}

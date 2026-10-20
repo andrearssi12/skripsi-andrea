@@ -1,9 +1,9 @@
-import { useForm, Head, Link, usePage } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
-
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
-import { ArrowLeft, Save, Shield, UserCheck, GraduationCap, AlertTriangle } from 'lucide-react';
+import { useForm, Head, usePage } from '@inertiajs/react';
+import Input from '@/Components/ui/Input';
+import Select from '@/Components/ui/Select';
+import PageHeader from '@/Components/PageHeader';
+import FormActions from '@/Components/ui/FormActions';
+import { Shield, UserCheck, GraduationCap, AlertTriangle } from 'lucide-react';
 
 export default function UserEdit({ user, roles = [] }) {
     const { auth } = usePage().props;
@@ -28,22 +28,12 @@ export default function UserEdit({ user, roles = [] }) {
             <Head title={`Edit Pengguna: ${user.name} - Web GIS UAD`} />
 
             <div className="max-w-3xl mx-auto space-y-6">
-
                 {/* Header */}
-                <div className="flex items-center gap-3">
-                    <Link
-                        href="/users"
-                        className="btn btn-ghost btn-sm p-2 text-gray-500 dark:text-slate-400"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                    </Link>
-                    <div>
-                        <h1 className="page-title text-xl">Edit Data Pengguna</h1>
-                        <p className="page-subtitle">
-                            Perbarui identitas, hak akses role, atau atur ulang kata sandi pengguna
-                        </p>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Edit Data Pengguna"
+                    description="Perbarui identitas, hak akses role, atau atur ulang kata sandi pengguna"
+                    backHref="/users"
+                />
 
                 {isSelf && (
                     <div className="p-4 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2.5">
@@ -86,10 +76,8 @@ export default function UserEdit({ user, roles = [] }) {
                                     value={data.password}
                                     onChange={(e) => setData('password', e.target.value)}
                                     error={errors.password}
+                                    helperText="Hanya diisi jika pengguna meminta pergantian kata sandi (minimal 8 karakter)."
                                 />
-                                <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">
-                                    Hanya diisi jika pengguna meminta pergantian kata sandi (minimal 8 karakter).
-                                </p>
                             </div>
 
                             <div className="space-y-1.5">
@@ -135,19 +123,15 @@ export default function UserEdit({ user, roles = [] }) {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-end gap-3 pt-5 border-t border-gray-100 dark:border-slate-800">
-                            <Link href="/users" className="btn btn-secondary">
-                                Batal
-                            </Link>
-                            <Button type="submit" variant="primary" isLoading={processing}>
-                                <Save className="w-4 h-4" />
-                                <span>Simpan Perubahan</span>
-                            </Button>
-                        </div>
+                        <FormActions
+                            cancelHref="/users"
+                            submitLabel="Simpan Perubahan"
+                            isLoading={processing}
+                            className="pt-5"
+                        />
                     </form>
                 </div>
             </div>
         </>
     );
 }
-

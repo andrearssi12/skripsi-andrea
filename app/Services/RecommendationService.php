@@ -109,7 +109,9 @@ class RecommendationService
         foreach ($landUses as $lu) {
             $area = (float) $lu->area_size;
             $gainPercent = $totalCampusArea > 0 ? round(($area / $totalCampusArea) * 100, 2) : 0.0;
-            $gapCoverage = $gapAreaSize > 0 ? round(($area / $gapAreaSize) * 100, 1) : 100.0;
+            $gapCoverage = (!$isAchieved && $gapAreaSize > 0)
+                ? round(($area / $gapAreaSize) * 100, 1)
+                : 0.0;
             $catName = $lu->category?->name ?? 'Lainnya';
             $name = $lu->name;
             $status = $lu->green_status;
@@ -146,7 +148,7 @@ class RecommendationService
                             : 'ZONA KRITIS: Dilarang keras dialihfungsikan menjadi gedung/parkir karena RTH kampus masih di bawah target 30%!'),
                     'spatial_directive' => 'Proteksi spasial penuh dari perataan tanah atau pendirian konstruksi permanen.',
                     'contribution_percent' => $gainPercent,
-                    'gap_coverage_percent' => $gapCoverage,
+                    'gap_coverage_percent' => 0.0,
                 ];
 
                 $conservationLayers[] = $item;
@@ -180,7 +182,11 @@ class RecommendationService
                         'badge' => 'Kandidat RTH Baru',
                         'badge_color' => 'badge-green',
                         'action_description' => "Lahan terbuka non-terbangun yang sangat potensial dikonversi menjadi taman kampus terpadu/rain garden untuk menutup defisit RTH.",
-                        'action_benefit' => "Konversi lahan ini berpotensi menyumbang +{$gainPercent}% ({$area} m²), menutup {$gapCoverage}% dari total defisit RTH kampus.",
+                        'action_benefit' => (!$isAchieved && $gapAreaSize > 0)
+                            ? ($gapCoverage >= 100
+                                ? "Konversi lahan ini berpotensi menyumbang +{$gainPercent}% ({$area} m²), menutup 100% defisit RTH kampus (target 30% langsung terpenuhi)."
+                                : "Konversi lahan ini berpotensi menyumbang +{$gainPercent}% ({$area} m²), menutup {$gapCoverage}% dari total defisit RTH kampus.")
+                            : "Konversi lahan ini berpotensi menambah tutupan RTH kampus sebesar +{$gainPercent}% ({$area} m²).",
                         'potential_gain_percent' => $gainPercent,
                         'gap_coverage_percent' => $gapCoverage,
                         'color' => '#10b981',
@@ -313,7 +319,7 @@ class RecommendationService
 
         // Format ALL approved & implemented plans directly from CampusSpatialPlan table
         // (Includes both plans created manually by admin and plans ACC'ed from system recommendations)
-        $approvedPlans = $existingPlansList->map(function ($plan) use ($pillarBadgeMap, $gapAreaSize, $totalCampusArea) {
+        $approvedPlans = $existingPlansList->map(function ($plan) use ($pillarBadgeMap, $gapAreaSize, $totalCampusArea, $isAchieved) {
             $pillar = $plan->pillar_type ?? 'conservation';
             $badgeInfo = $pillarBadgeMap[$pillar] ?? ['badge' => 'Perencanaan Kampus', 'color' => 'badge-green', 'title' => 'Rencana Penataan RTH'];
             $isImplemented = $plan->status === 'implemented';
@@ -322,7 +328,9 @@ class RecommendationService
             if ($gain <= 0 && $totalCampusArea > 0 && $area > 0) {
                 $gain = round(($area / $totalCampusArea) * 100, 2);
             }
-            $gapCoverage = $gapAreaSize > 0 ? round(($area / $gapAreaSize) * 100, 1) : 100.0;
+            $gapCoverage = (!$isAchieved && $gapAreaSize > 0)
+                ? round(($area / $gapAreaSize) * 100, 1)
+                : 0.0;
 
             return [
                 'id' => $plan->id,

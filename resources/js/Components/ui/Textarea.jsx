@@ -1,5 +1,17 @@
 import { cn } from '@/lib/utils';
 
+/**
+ * Textarea — Komponen textarea form terpadu.
+ *
+ * Props:
+ *  - label      : string — label di atas textarea
+ *  - id         : string — htmlFor label & id textarea
+ *  - rows       : number — jumlah baris (default: 4)
+ *  - error      : string — pesan error validasi (opsional)
+ *  - required   : bool   — menampilkan tanda * merah di label
+ *  - helperText : string — teks panduan di bawah textarea (opsional)
+ *  - ...rest             — semua props native <textarea>
+ */
 export default function Textarea({
     label,
     error,
@@ -7,6 +19,7 @@ export default function Textarea({
     rows = 4,
     className,
     required,
+    helperText,
     ...rest
 }) {
     return (
@@ -24,6 +37,11 @@ export default function Textarea({
                 {...rest}
             />
             {error && <p className="form-error">{error}</p>}
+            {!error && helperText && (
+                <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1 leading-relaxed">
+                    {helperText}
+                </p>
+            )}
         </div>
     );
 }

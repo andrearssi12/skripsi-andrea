@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { X, MessageSquare, Calendar, User, ExternalLink, Image as ImageIcon, PlusCircle } from 'lucide-react';
+import { X, MessageSquare, Calendar, User, ExternalLink, Image as ImageIcon, PlusCircle, Edit3, Archive } from 'lucide-react';
 import { router, usePage, Link } from '@inertiajs/react';
 import { formatArea } from '@/lib/utils';
+import ConfirmDialog from '@/Components/ui/ConfirmDialog';
 
 const statusColor = {
     'Green Area': 'badge-green',
@@ -26,7 +27,10 @@ const FEEDBACK_STATUS = {
 export default function MapPopup({ feature, onClose }) {
     const { auth } = usePage().props;
     const user = auth?.user;
+    const isAdmin = user?.role === 'admin';
     const [expandedFeedbackId, setExpandedFeedbackId] = useState(null);
+    const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+    const [isArchiving, setIsArchiving] = useState(false);
 
     if (!feature) return null;
 
@@ -39,6 +43,19 @@ export default function MapPopup({ feature, onClose }) {
             return;
         }
         router.get('/feedback/create', { land_use_id: feature.id });
+    };
+
+    const handleArchive = () => {
+        if (!feature?.id) return;
+        setIsArchiving(true);
+        router.delete(`/land-uses/${feature.id}`, {
+            preserveScroll: true,
+            onFinish: () => {
+                setIsArchiving(false);
+                setShowArchiveConfirm(false);
+                onClose?.();
+            },
+        });
     };
 
     return (
@@ -219,7 +236,31 @@ export default function MapPopup({ feature, onClose }) {
                 </div>
 
                 {/* Footer action */}
-                <div className="px-4 py-2.5 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/30 flex items-center gap-2">
+                <div className="px-4 py-2.5 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/30 flex flex-col gap-2">
+                    {/* Admin Action Buttons for Lahan / Land Use */}
+                    {isAdmin && feature.id && !feature.is_spatial_plan && (
+                        <div className="flex items-center gap-2">
+                            <Link
+                                href={`/land-uses/${feature.id}/edit`}
+                                className="btn btn-secondary btn-sm flex-1 flex items-center justify-center gap-1.5 font-bold border-blue-200 dark:border-blue-900/60 text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+                                title="Edit data atribut dan geometri lahan ini"
+                            >
+                                <Edit3 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                <span>Edit Lahan</span>
+                            </Link>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowArchiveConfirm(true)}
+                                className="btn btn-secondary btn-sm flex-1 flex items-center justify-center gap-1.5 font-bold border-amber-200 dark:border-amber-900/60 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                                title="Arsipkan aset lahan ini"
+                            >
+                                <Archive className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>Arsipkan</span>
+                            </button>
+                        </div>
+                    )}
+
                     <button
                         type="button"
                         onClick={handleFeedback}
@@ -230,6 +271,20 @@ export default function MapPopup({ feature, onClose }) {
                     </button>
                 </div>
             </div>
+
+            {/* Modal Konfirmasi Arsip Lahan */}
+            {isAdmin && feature.id && (
+                <ConfirmDialog
+                    isOpen={showArchiveConfirm}
+                    onClose={() => setShowArchiveConfirm(false)}
+                    onConfirm={handleArchive}
+                    title="Arsipkan Objek Lahan"
+                    message={`Apakah Anda yakin ingin mengarsipkan aset "${feature.name}"? Objek ini akan dipindahkan ke daftar arsip & riwayat dan tidak aktif di peta.`}
+                    confirmLabel="Arsipkan Aset"
+                    confirmVariant="danger"
+                    isLoading={isArchiving}
+                />
+            )}
         </div>
     );
 }

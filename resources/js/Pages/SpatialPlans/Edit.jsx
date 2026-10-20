@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Head, Link, useForm, router } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
-
-import DrawingMap from '@/components/map/DrawingMap';
+import { Head, useForm } from '@inertiajs/react';
+import Button from '@/Components/ui/Button';
+import Input from '@/Components/ui/Input';
+import Select from '@/Components/ui/Select';
+import Textarea from '@/Components/ui/Textarea';
+import PageHeader from '@/Components/PageHeader';
+import DrawingMap from '@/Components/map/DrawingMap';
 import { formatArea } from '@/lib/utils';
 import {
-    Compass, ArrowLeft, Save, CheckCircle2, Sparkles,
-    Edit3, Info, Building2, Layers, Clock, ShieldCheck
+    Compass, Save, Info, Building2, Layers, ShieldCheck
 } from 'lucide-react';
 
 const PILLAR_OPTIONS = [
@@ -22,6 +24,7 @@ export default function SpatialPlansEdit({
     plan,
     effectiveGeometry,
     campuses = [],
+    campusAnalysis = null,
     recommendationItems = [],
 }) {
     const selectedCampus = campuses.find(c => c.id === plan.campus_id) || campuses[0] || null;
@@ -72,48 +75,40 @@ export default function SpatialPlansEdit({
             <Head title={`Edit Rencana: ${plan.title} - Web GIS UAD`} />
 
             <div className="space-y-5">
-
                 {/* Header */}
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                    <div className="flex items-center gap-3">
-                        <Link href={route('spatial-plans.index')} className="btn btn-ghost btn-sm p-2 text-gray-500">
-                            <ArrowLeft className="w-4 h-4" />
-                        </Link>
-                        <div>
-                            <h1 className="page-title text-xl">Edit Rencana Spasial #{plan.id}</h1>
-                            <p className="page-subtitle">Sesuaikan data rencana, luasan, titik batas polygon, dan status pelaksanaan</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {/* Simpan sesuai dropdown yang dipilih */}
-                        <Button
-                            type="button"
-                            variant="primary"
-                            size="sm"
-                            disabled={processing}
-                            onClick={() => handleSubmit()}
-                        >
-                            <Save className="w-4 h-4" />
-                            <span>Simpan Perubahan</span>
-                        </Button>
-
-                        {/* Quick action buttons if admin wants quick status jump */}
-                        {data.status !== 'implemented' && (
+                <PageHeader
+                    title={`Edit Rencana Spasial #${plan.id}`}
+                    description="Sesuaikan data rencana, luasan, titik batas polygon, dan status pelaksanaan"
+                    backHref={route('spatial-plans.index')}
+                    actions={
+                        <>
                             <Button
                                 type="button"
-                                variant="secondary"
+                                variant="primary"
                                 size="sm"
                                 disabled={processing}
-                                onClick={() => handleSubmit('implemented')}
-                                className="border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/50"
+                                onClick={() => handleSubmit()}
                             >
-                                <ShieldCheck className="w-4 h-4 text-sky-600" />
-                                <span>Tandai Terimplementasi</span>
+                                <Save className="w-4 h-4" />
+                                <span>Simpan Perubahan</span>
                             </Button>
-                        )}
-                    </div>
-                </div>
+
+                            {data.status !== 'implemented' && (
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    disabled={processing}
+                                    onClick={() => handleSubmit('implemented')}
+                                    className="border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/50"
+                                >
+                                    <ShieldCheck className="w-4 h-4 text-sky-600" />
+                                    <span>Tandai Terimplementasi</span>
+                                </Button>
+                            )}
+                        </>
+                    }
+                />
 
                 {/* 2-Column Responsive Layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -133,19 +128,19 @@ export default function SpatialPlansEdit({
                             </div>
 
                             {/* Status Selector */}
-                            <div>
-                                <label className="form-label text-xs">Status Rencana</label>
-                                <select
-                                    value={data.status}
-                                    onChange={(e) => setData('status', e.target.value)}
-                                    className="form-select text-xs py-2"
-                                >
-                                    <option value="draft">Draft (Hanya Terlihat Oleh Admin)</option>
-                                    <option value="approved">Approved (Disetujui & Tampil ke Civitas / Peta)</option>
-                                    <option value="implemented">Implemented (Pembangunan Telah Selesai)</option>
-                                </select>
-                                {errors.status && <p className="form-error">{errors.status}</p>}
-                            </div>
+                            <Select
+                                label="Status Rencana"
+                                id="status"
+                                value={data.status}
+                                onChange={(e) => setData('status', e.target.value)}
+                                placeholder={false}
+                                className="text-xs py-2"
+                                error={errors.status}
+                            >
+                                <option value="draft">Draft (Hanya Terlihat Oleh Admin)</option>
+                                <option value="approved">Approved (Disetujui & Tampil ke Civitas / Peta)</option>
+                                <option value="implemented">Implemented (Pembangunan Telah Selesai)</option>
+                            </Select>
 
                             {/* Lokasi Kampus */}
                             <div>
@@ -154,96 +149,119 @@ export default function SpatialPlansEdit({
                                     <Building2 className="w-4 h-4 text-emerald-600" />
                                     <span>{selectedCampus?.name}</span>
                                 </div>
+
+                                {campusAnalysis && (
+                                    <div className="mt-2 p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-[11px] space-y-1">
+                                        <div className="flex items-center justify-between font-bold text-emerald-900 dark:text-emerald-200">
+                                            <span>RTH Saat Ini: {campusAnalysis.green_percentage}%</span>
+                                            <span className={`badge text-[9px] ${campusAnalysis.is_achieved ? 'badge-green' : 'badge-amber'}`}>
+                                                {campusAnalysis.is_achieved ? 'Target 30% Terpenuhi' : `Defisit ${campusAnalysis.gap_percentage}%`}
+                                            </span>
+                                        </div>
+                                        <div className="text-[10px] text-gray-600 dark:text-slate-300 flex justify-between">
+                                            <span>Target 30%: {formatArea(campusAnalysis.target_area)}</span>
+                                            <span>Defisit: {campusAnalysis.is_achieved ? '0 m²' : formatArea(campusAnalysis.gap_area_size)}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Judul Rencana */}
-                            <div>
-                                <label className="form-label text-xs">Judul / Nama Rencana</label>
-                                <input
-                                    type="text"
-                                    value={data.title}
-                                    onChange={(e) => setData('title', e.target.value)}
-                                    className="form-input text-xs py-2"
-                                />
-                                {errors.title && <p className="form-error">{errors.title}</p>}
-                            </div>
+                            <Input
+                                label="Judul / Nama Rencana"
+                                id="title"
+                                type="text"
+                                value={data.title}
+                                onChange={(e) => setData('title', e.target.value)}
+                                className="text-xs py-2"
+                                error={errors.title}
+                            />
 
                             {/* Pilar Zonasi */}
-                            <div>
-                                <label className="form-label text-xs">Pilar Pengembangan Spasial</label>
-                                <select
-                                    value={data.pillar_type}
-                                    onChange={(e) => setData('pillar_type', e.target.value)}
-                                    className="form-select text-xs py-2"
-                                >
-                                    {PILLAR_OPTIONS.map(p => (
-                                        <option key={p.value} value={p.value}>{p.label}</option>
-                                    ))}
-                                </select>
-                                {errors.pillar_type && <p className="form-error">{errors.pillar_type}</p>}
-                            </div>
+                            <Select
+                                label="Pilar Pengembangan Spasial"
+                                id="pillar_type"
+                                value={data.pillar_type}
+                                onChange={(e) => setData('pillar_type', e.target.value)}
+                                placeholder={false}
+                                options={PILLAR_OPTIONS}
+                                className="text-xs py-2"
+                                error={errors.pillar_type}
+                            />
 
                             {/* Target Tahun & Luas Grid */}
                             <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="form-label text-xs">Target Pelaksanaan</label>
-                                    <input
-                                        type="text"
-                                        value={data.target_year}
-                                        onChange={(e) => setData('target_year', e.target.value)}
-                                        className="form-input text-xs py-2"
-                                    />
-                                    {errors.target_year && <p className="form-error">{errors.target_year}</p>}
-                                </div>
+                                <Input
+                                    label="Target Pelaksanaan"
+                                    id="target_year"
+                                    type="text"
+                                    value={data.target_year}
+                                    onChange={(e) => setData('target_year', e.target.value)}
+                                    className="text-xs py-2"
+                                    error={errors.target_year}
+                                />
 
-                                <div>
-                                    <label className="form-label text-xs">Luas Area (m²)</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={data.area_size}
-                                        onChange={(e) => setData('area_size', parseFloat(e.target.value) || 0)}
-                                        className="form-input text-xs py-2 font-mono"
-                                    />
-                                    {errors.area_size && <p className="form-error">{errors.area_size}</p>}
-                                </div>
-                            </div>
-
-                            {/* Potensi Kenaikan RTH */}
-                            <div>
-                                <label className="form-label text-xs">Potensi Kontribusi Kenaikan RTH Kampus (%)</label>
-                                <input
+                                <Input
+                                    label="Luas Area"
+                                    id="area_size"
                                     type="number"
                                     step="0.01"
-                                    value={data.potential_gain_percent}
-                                    onChange={(e) => setData('potential_gain_percent', parseFloat(e.target.value) || 0)}
-                                    className="form-input text-xs py-2 font-mono"
+                                    suffix="m²"
+                                    value={data.area_size}
+                                    onChange={(e) => setData('area_size', parseFloat(e.target.value) || 0)}
+                                    className="text-xs py-2 font-mono"
+                                    error={errors.area_size}
                                 />
-                                {errors.potential_gain_percent && <p className="form-error">{errors.potential_gain_percent}</p>}
                             </div>
+
+                            {/* Potensi Kenaikan / Proteksi RTH */}
+                            <Input
+                                label={
+                                    data.pillar_type === 'conservation'
+                                        ? 'Proporsi Proteksi RTH Kampus'
+                                        : 'Potensi Kontribusi Kenaikan RTH Kampus'
+                                }
+                                id="potential_gain_percent"
+                                type="number"
+                                step="0.01"
+                                suffix="%"
+                                value={data.potential_gain_percent}
+                                onChange={(e) => setData('potential_gain_percent', parseFloat(e.target.value) || 0)}
+                                className="text-xs py-2 font-mono"
+                                error={errors.potential_gain_percent}
+                                helperText={
+                                    data.pillar_type !== 'conservation' &&
+                                    campusAnalysis &&
+                                    !campusAnalysis.is_achieved &&
+                                    campusAnalysis.gap_area_size > 0 &&
+                                    data.area_size > 0
+                                        ? (data.area_size / campusAnalysis.gap_area_size) >= 1
+                                            ? `🎯 Rencana seluas ${formatArea(data.area_size)} ini berpotensi menutup 100% defisit RTH kampus (target 30% terpenuhi).`
+                                            : `🎯 Rencana seluas ${formatArea(data.area_size)} ini berpotensi menutup ${((data.area_size / campusAnalysis.gap_area_size) * 100).toFixed(1)}% defisit RTH kampus.`
+                                        : undefined
+                                }
+                            />
 
                             {/* Deskripsi */}
-                            <div>
-                                <label className="form-label text-xs">Deskripsi & Rencana Tindakan</label>
-                                <textarea
-                                    rows={3}
-                                    value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
-                                    className="form-input text-xs py-2 resize-none"
-                                />
-                                {errors.description && <p className="form-error">{errors.description}</p>}
-                            </div>
+                            <Textarea
+                                label="Deskripsi & Rencana Tindakan"
+                                id="description"
+                                rows={3}
+                                value={data.description}
+                                onChange={(e) => setData('description', e.target.value)}
+                                className="text-xs py-2 resize-none"
+                                error={errors.description}
+                            />
 
                             {/* Catatan Internal */}
-                            <div>
-                                <label className="form-label text-xs">Catatan Administrator</label>
-                                <input
-                                    type="text"
-                                    value={data.notes}
-                                    onChange={(e) => setData('notes', e.target.value)}
-                                    className="form-input text-xs py-2"
-                                />
-                            </div>
+                            <Input
+                                label="Catatan Administrator"
+                                id="notes"
+                                type="text"
+                                value={data.notes}
+                                onChange={(e) => setData('notes', e.target.value)}
+                                className="text-xs py-2"
+                            />
                         </div>
                     </div>
 
@@ -283,4 +301,3 @@ export default function SpatialPlansEdit({
         </>
     );
 }
-

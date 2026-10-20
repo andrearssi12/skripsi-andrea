@@ -1,9 +1,10 @@
-import { useForm, Head, Link } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
-
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import { ArrowLeft, Save } from 'lucide-react';
+import { useForm, Head } from '@inertiajs/react';
+import Button from '@/Components/ui/Button';
+import Input from '@/Components/ui/Input';
+import Textarea from '@/Components/ui/Textarea';
+import ColorPicker from '@/Components/ui/ColorPicker';
+import FormActions from '@/Components/ui/FormActions';
+import PageHeader from '@/Components/PageHeader';
 
 export default function CategoryEdit({ category }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -23,16 +24,11 @@ export default function CategoryEdit({ category }) {
             <Head title={`Edit Kategori: ${category.name}`} />
 
             <div className="max-w-xl mx-auto space-y-5">
-
-                <div className="flex items-center gap-3">
-                    <Link href="/land-use-categories" className="btn btn-ghost btn-sm p-2 text-gray-500 dark:text-slate-400">
-                        <ArrowLeft className="w-4 h-4" />
-                    </Link>
-                    <div>
-                        <h1 className="page-title text-xl">Edit Kategori Lahan</h1>
-                        <p className="page-subtitle">Perbarui nama dan kode warna {category.name}</p>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Edit Kategori Lahan"
+                    description={`Perbarui nama dan kode warna ${category.name}`}
+                    backHref="/land-use-categories"
+                />
 
                 <div className="card p-6">
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -45,24 +41,14 @@ export default function CategoryEdit({ category }) {
                             required
                         />
 
-                        <div>
-                            <label className="form-label">Warna Polygon (Hex)</label>
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="color"
-                                    value={data.color}
-                                    onChange={(e) => setData('color', e.target.value)}
-                                    className="w-12 h-10 p-1 rounded-lg border border-gray-300 dark:border-slate-600 cursor-pointer bg-transparent"
-                                />
-                                <input
-                                    type="text"
-                                    value={data.color}
-                                    onChange={(e) => setData('color', e.target.value)}
-                                    className="form-input flex-1"
-                                />
-                            </div>
-                            {errors.color && <p className="form-error">{errors.color}</p>}
-                        </div>
+                        <ColorPicker
+                            label="Warna Polygon (Hex)"
+                            id="color"
+                            value={data.color}
+                            onChange={(hex) => setData('color', hex)}
+                            error={errors.color}
+                            required
+                        />
 
                         <Textarea
                             label="Deskripsi Kategori"
@@ -73,19 +59,14 @@ export default function CategoryEdit({ category }) {
                             error={errors.description}
                         />
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
-                            <Link href="/land-use-categories" className="btn btn-secondary">
-                                Batal
-                            </Link>
-                            <Button type="submit" variant="primary" isLoading={processing}>
-                                <Save className="w-4 h-4" />
-                                Simpan Perubahan
-                            </Button>
-                        </div>
+                        <FormActions
+                            cancelHref="/land-use-categories"
+                            submitLabel="Simpan Perubahan"
+                            isLoading={processing}
+                        />
                     </form>
                 </div>
             </div>
         </>
     );
 }
-

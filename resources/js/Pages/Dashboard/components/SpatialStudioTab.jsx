@@ -114,9 +114,13 @@ export default function SpatialStudioTab({
                 <div className="p-4 rounded-xl bg-white/90 dark:bg-slate-800/90 border border-gray-200/80 dark:border-slate-700 shadow-xs space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left">
                         <div>
-                            <span className="text-[11px] text-gray-400 dark:text-slate-500 block">Status RTH Asli</span>
-                            <span className="text-xl font-bold text-gray-800 dark:text-slate-200">{greenPercent}%</span>
-                            <span className="text-[10px] text-gray-400 block">{formatArea(analysis.green_area_size)}</span>
+                            <span className="text-[11px] text-gray-400 dark:text-slate-500 block">Total Vegetasi Saat Ini</span>
+                            <span className="text-xl font-bold text-gray-800 dark:text-slate-200">
+                                {analysis.vegetated_percentage ?? greenPercent}%
+                            </span>
+                            <span className="text-[10px] text-gray-400 block">
+                                RTH: {greenPercent}% • Non-RTH: {(Math.max(0, (analysis.vegetated_percentage || 0) - (greenPercent || 0))).toFixed(2)}%
+                            </span>
                         </div>
 
                         <div>
@@ -149,19 +153,25 @@ export default function SpatialStudioTab({
                     </div>
 
                     <div className="space-y-1">
-                        <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden relative">
+                        <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden relative flex">
                             <div className="absolute top-0 bottom-0 left-[30%] w-0.5 bg-amber-500 z-10" title="Batas Target 30%" />
                             <div
-                                className="h-full bg-emerald-500 transition-all duration-500 absolute left-0"
+                                className="h-full bg-emerald-500 transition-all duration-500"
                                 style={{ width: `${Math.min(100, greenPercent)}%` }}
+                                title={`RTH: ${greenPercent}%`}
+                            />
+                            <div
+                                className="h-full bg-lime-400 transition-all duration-500"
+                                style={{ width: `${Math.min(100 - greenPercent, Math.max(0, (analysis.vegetated_percentage || 0) - greenPercent))}%` }}
+                                title={`Non-RTH: ${(Math.max(0, (analysis.vegetated_percentage || 0) - greenPercent)).toFixed(2)}%`}
                             />
                             {simulatedGainPercent > 0 && (
                                 <div
-                                    className="h-full bg-sky-400 dark:bg-sky-500 transition-all duration-500 absolute animate-pulse"
+                                    className="h-full bg-sky-400 dark:bg-sky-500 transition-all duration-500 animate-pulse"
                                     style={{
-                                        left: `${Math.min(100, greenPercent)}%`,
-                                        width: `${Math.min(100 - greenPercent, simulatedGainPercent)}%`
+                                        width: `${Math.min(100 - (analysis.vegetated_percentage || greenPercent), simulatedGainPercent)}%`
                                     }}
+                                    title={`Simulasi Tambahan: +${simulatedGainPercent}%`}
                                 />
                             )}
                         </div>

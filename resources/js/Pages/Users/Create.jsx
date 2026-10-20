@@ -1,9 +1,9 @@
-import { useForm, Head, Link } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
-
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
-import { ArrowLeft, Save, UserPlus, Shield, UserCheck, GraduationCap, Info } from 'lucide-react';
+import { useForm, Head } from '@inertiajs/react';
+import Input from '@/Components/ui/Input';
+import Select from '@/Components/ui/Select';
+import PageHeader from '@/Components/PageHeader';
+import FormActions from '@/Components/ui/FormActions';
+import { Shield, UserCheck, GraduationCap } from 'lucide-react';
 
 export default function UserCreate({ roles = [] }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -25,22 +25,12 @@ export default function UserCreate({ roles = [] }) {
             <Head title="Tambah Pengguna Baru - Web GIS UAD" />
 
             <div className="max-w-3xl mx-auto space-y-6">
-
                 {/* Header */}
-                <div className="flex items-center gap-3">
-                    <Link
-                        href="/users"
-                        className="btn btn-ghost btn-sm p-2 text-gray-500 dark:text-slate-400"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                    </Link>
-                    <div>
-                        <h1 className="page-title text-xl">Tambah Pengguna Baru</h1>
-                        <p className="page-subtitle">
-                            Buat akun baru untuk Administrator, Pengurus Lingkungan Kampus, atau Civitas Academica
-                        </p>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Tambah Pengguna Baru"
+                    description="Buat akun baru untuk Administrator, Pengurus Lingkungan Kampus, atau Civitas Academica"
+                    backHref="/users"
+                />
 
                 {/* Form Card */}
                 <div className="card p-6">
@@ -120,19 +110,15 @@ export default function UserCreate({ roles = [] }) {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-end gap-3 pt-5 border-t border-gray-100 dark:border-slate-800">
-                            <Link href="/users" className="btn btn-secondary">
-                                Batal
-                            </Link>
-                            <Button type="submit" variant="primary" isLoading={processing}>
-                                <Save className="w-4 h-4" />
-                                <span>Simpan Pengguna</span>
-                            </Button>
-                        </div>
+                        <FormActions
+                            cancelHref="/users"
+                            submitLabel="Simpan Pengguna"
+                            isLoading={processing}
+                            className="pt-5"
+                        />
                     </form>
                 </div>
             </div>
         </>
     );
 }
-

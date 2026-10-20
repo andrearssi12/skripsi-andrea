@@ -61,9 +61,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
         ->parameters(['land-use-categories' => 'landUseCategory'])
         ->except(['show']);
 
-    // Land Use Objects (Spasial)
+    // Land Use Objects (Spasial) & Arsip
     Route::get('/land-uses/import', [ImportController::class, 'create'])->name('land-uses.import.create');
     Route::post('/land-uses/import', [ImportController::class, 'store'])->name('land-uses.import.store');
+    Route::post('/land-uses/{id}/restore', [LandUseController::class, 'restore'])->name('land-uses.restore');
+    Route::delete('/land-uses/{id}/force-delete', [LandUseController::class, 'forceDelete'])->name('land-uses.force-delete');
     Route::resource('land-uses', LandUseController::class)->parameters(['land-uses' => 'landUse']);
 
     // Feedback Management (Deletion only for Admin)

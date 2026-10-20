@@ -386,8 +386,19 @@ export default function LeafletMap({
         });
 
         // 1. Separate Parent Features (no parent_id) and Child Features (has parent_id)
-        const parentFeatures = allFeatures.filter(f => !f.properties?.parent_id);
-        const childFeatures  = allFeatures.filter(f => Boolean(f.properties?.parent_id));
+        // Sort each group by area_size DESCENDING (largest first, smallest last).
+        // In SVG/Canvas/Leaflet DOM, layers added later are stacked ON TOP of earlier ones.
+        // This ensures smaller polygons (e.g. vegetation islands inside parking areas)
+        // sit above larger enclosing polygons and receive mouse clicks & hovers cleanly!
+        const sortByAreaDesc = (a, b) => ((b.properties?.area_size || 0) - (a.properties?.area_size || 0));
+
+        const parentFeatures = allFeatures
+            .filter(f => !f.properties?.parent_id)
+            .sort(sortByAreaDesc);
+
+        const childFeatures  = allFeatures
+            .filter(f => Boolean(f.properties?.parent_id))
+            .sort(sortByAreaDesc);
 
         // 2. Render Parent layers in parentPolygonPane (zIndex 450)
         if (parentFeatures.length > 0) {

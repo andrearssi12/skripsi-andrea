@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import {
     Sparkles,
     Navigation,
@@ -195,10 +195,13 @@ export default function HeroSection({
                                         </div>
                                         <div>
                                             <span className="text-[10px] text-gray-400 dark:text-slate-500 block">
-                                                Green Area
+                                                Total Vegetasi
                                             </span>
                                             <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                                                {c.green_percentage}%
+                                                {c.vegetated_percentage ?? c.green_percentage}%
+                                            </span>
+                                            <span className="text-[9px] text-gray-400 dark:text-slate-500 block">
+                                                RTH: {c.green_percentage}%
                                             </span>
                                         </div>
                                         <div>
@@ -213,17 +216,25 @@ export default function HeroSection({
 
                                     {/* Progress bar */}
                                     <div className="mt-3 space-y-1">
-                                        <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                        <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden flex">
                                             <div
-                                                className={`h-full rounded-full transition-all duration-700 ${c.is_achieved ? "bg-emerald-500" : "bg-amber-400"}`}
+                                                className="h-full bg-emerald-500 transition-all duration-700"
+                                                title={`RTH: ${c.green_percentage}%`}
                                                 style={{
-                                                    width: `${Math.min(100, (c.green_percentage / 30) * 100)}%`,
+                                                    width: `${Math.min(100, ((c.green_percentage || 0) / 30) * 100)}%`,
+                                                }}
+                                            />
+                                            <div
+                                                className="h-full bg-lime-400 transition-all duration-700"
+                                                title={`Vegetasi Non-RTH: ${(Math.max(0, (c.vegetated_percentage || 0) - (c.green_percentage || 0))).toFixed(2)}%`}
+                                                style={{
+                                                    width: `${Math.min(100 - (((c.green_percentage || 0) / 30) * 100), Math.max(0, (((c.vegetated_percentage || 0) - (c.green_percentage || 0)) / 30) * 100))}%`,
                                                 }}
                                             />
                                         </div>
                                         <div className="flex justify-between text-[9px] text-gray-400 dark:text-slate-500">
-                                            <span>0%</span>
-                                            <span>Target 30%</span>
+                                            <span>Total: {c.vegetated_percentage ?? c.green_percentage}%</span>
+                                            <span>Target: 30%</span>
                                         </div>
                                     </div>
 

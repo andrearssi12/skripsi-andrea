@@ -1,55 +1,68 @@
-import { useState } from 'react';
-import { useForm, Head, Link } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
+import { useState } from "react";
+import { Link } from "@inertiajs/react";
+import { useForm, Head } from "@inertiajs/react";
+import Button from "@/Components/ui/Button";
+import Input from "@/Components/ui/Input";
+import Textarea from "@/Components/ui/Textarea";
+import LeafletDrawMap from "@/Components/map/LeafletDrawMap";
+import GeoJsonUploader from "@/Components/map/GeoJsonUploader";
+import PageHeader from "@/Components/PageHeader";
+import FormActions from "@/Components/ui/FormActions";
+import { MapPin, Save } from "lucide-react";
 
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import LeafletDrawMap from '@/components/map/LeafletDrawMap';
-import GeoJsonUploader from '@/components/map/GeoJsonUploader';
-import { ArrowLeft, Save, MapPin, Building2, Upload } from 'lucide-react';
-
-export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCollection', features: [] } }) {
+export default function CampusCreate({
+    otherCampusesGeoJson = { type: "FeatureCollection", features: [] },
+}) {
     const [activeGeometry, setActiveGeometry] = useState(null);
 
     const { data, setData, post, processing, errors } = useForm({
-        code: '',
-        name: '',
-        address: '',
-        total_area: '',
-        boundary_geometry: '',
-        description: '',
+        code: "",
+        name: "",
+        address: "",
+        total_area: "",
+        boundary_geometry: "",
+        description: "",
     });
 
     const handleBoundaryDrawn = (geometry, areaM2) => {
         if (geometry) {
             setActiveGeometry(geometry);
-            setData(prev => ({
+            setData((prev) => ({
                 ...prev,
                 boundary_geometry: JSON.stringify(geometry, null, 2),
                 total_area: areaM2 > 0 ? String(areaM2) : prev.total_area,
             }));
         } else {
             setActiveGeometry(null);
-            setData(prev => ({ ...prev, boundary_geometry: '' }));
+            setData((prev) => ({ ...prev, boundary_geometry: "" }));
         }
     };
 
     const handleGeoJsonUploaded = ({ geometry, areaM2, suggestedFields }) => {
         setActiveGeometry(geometry);
-        setData(prev => {
+        setData((prev) => {
             const next = {
                 ...prev,
                 boundary_geometry: JSON.stringify(geometry, null, 2),
                 total_area: areaM2 > 0 ? String(areaM2) : prev.total_area,
             };
 
-            if (suggestedFields.name && (!prev.name || prev.name.trim() === '')) {
+            if (
+                suggestedFields.name &&
+                (!prev.name || prev.name.trim() === "")
+            ) {
                 next.name = suggestedFields.name;
             }
-            if (suggestedFields.code && (!prev.code || prev.code.trim() === '')) {
+            if (
+                suggestedFields.code &&
+                (!prev.code || prev.code.trim() === "")
+            ) {
                 next.code = suggestedFields.code;
             }
-            if (suggestedFields.description && (!prev.description || prev.description.trim() === '')) {
+            if (
+                suggestedFields.description &&
+                (!prev.description || prev.description.trim() === "")
+            ) {
                 next.description = suggestedFields.description;
             }
 
@@ -59,7 +72,7 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/campuses');
+        post("/campuses");
     };
 
     return (
@@ -67,16 +80,11 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
             <Head title="Tambah Kampus Baru - Web GIS UAD" />
 
             <div className="max-w-4xl mx-auto space-y-5">
-
-                <div className="flex items-center gap-3">
-                    <Link href="/campuses" className="btn btn-ghost btn-sm p-2 text-gray-500 dark:text-slate-400">
-                        <ArrowLeft className="w-4 h-4" />
-                    </Link>
-                    <div>
-                        <h1 className="page-title text-xl">Tambah Kampus Baru</h1>
-                        <p className="page-subtitle">Gambar perimeter batas kampus atau unggah berkas GeoJSON dari QGIS</p>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Tambah Kampus Baru"
+                    description="Gambar perimeter batas kampus atau unggah berkas GeoJSON dari QGIS"
+                    backHref="/campuses"
+                />
 
                 <div className="card p-6 space-y-6">
                     {/* GeoJSON Boundary Uploader */}
@@ -84,7 +92,7 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                         <GeoJsonUploader
                             onGeoJsonLoaded={handleGeoJsonUploaded}
                             currentGeometry={data.boundary_geometry}
-                            currentName={data.name || 'batas_kampus_baru'}
+                            currentName={data.name || "batas_kampus_baru"}
                             isBoundaryMode={true}
                         />
                     </div>
@@ -94,10 +102,12 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                         <label className="form-label flex items-center justify-between">
                             <span className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-slate-200">
                                 <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                Gambar / Visualisasi Garis Batas Wilayah Kampus (Perimeter Boundary)
+                                Gambar / Visualisasi Garis Batas Wilayah Kampus
+                                (Perimeter Boundary)
                             </span>
                             <span className="text-[11px] text-gray-500 dark:text-slate-400">
-                                Gunakan tombol poligon di sudut peta atau file GeoJSON
+                                Gunakan tombol poligon di sudut peta atau file
+                                GeoJSON
                             </span>
                         </label>
 
@@ -109,17 +119,26 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                             otherCampusesGeoJson={otherCampusesGeoJson}
                             height="380px"
                         />
-                        {errors.boundary_geometry && <p className="form-error">{errors.boundary_geometry}</p>}
+                        {errors.boundary_geometry && (
+                            <p className="form-error">
+                                {errors.boundary_geometry}
+                            </p>
+                        )}
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5 pt-2 border-t border-gray-100 dark:border-slate-800">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5 pt-2 border-t border-gray-100 dark:border-slate-800"
+                    >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Input
                                 label="Kode Kampus"
                                 id="code"
                                 placeholder="Contoh: KAMPUS-4"
                                 value={data.code}
-                                onChange={(e) => setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    setData("code", e.target.value)
+                                }
                                 error={errors.code}
                                 required
                             />
@@ -128,7 +147,9 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                                 id="name"
                                 placeholder="Contoh: Universitas Ahmad Dahlan - Kampus 4"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData("name", e.target.value)
+                                }
                                 error={errors.name}
                                 required
                             />
@@ -142,7 +163,9 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                                 step="0.01"
                                 placeholder="Contoh: 52000"
                                 value={data.total_area}
-                                onChange={(e) => setData('total_area', e.target.value)}
+                                onChange={(e) =>
+                                    setData("total_area", e.target.value)
+                                }
                                 error={errors.total_area}
                                 required
                             />
@@ -151,7 +174,9 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                                 id="address"
                                 placeholder="Jl. Ringroad Selatan, Banguntapan, Bantul"
                                 value={data.address}
-                                onChange={(e) => setData('address', e.target.value)}
+                                onChange={(e) =>
+                                    setData("address", e.target.value)
+                                }
                                 error={errors.address}
                             />
                         </div>
@@ -167,14 +192,19 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                                     rows={4}
                                     value={data.boundary_geometry}
                                     onChange={(e) => {
-                                        setData('boundary_geometry', e.target.value);
+                                        setData(
+                                            "boundary_geometry",
+                                            e.target.value,
+                                        );
                                         try {
-                                            const g = JSON.parse(e.target.value);
+                                            const g = JSON.parse(
+                                                e.target.value,
+                                            );
                                             setActiveGeometry(g);
                                         } catch (err) {}
                                     }}
                                     className="font-mono text-xs"
-                                    placeholder='Koordinat polygon batas kampus akan terisi di sini'
+                                    placeholder="Koordinat polygon batas kampus akan terisi di sini"
                                 />
                             </div>
                         </details>
@@ -185,15 +215,24 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
                             rows={3}
                             placeholder="Keterangan profil kampus..."
                             value={data.description}
-                            onChange={(e) => setData('description', e.target.value)}
+                            onChange={(e) =>
+                                setData("description", e.target.value)
+                            }
                             error={errors.description}
                         />
 
                         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
-                            <Link href="/campuses" className="btn btn-secondary">
+                            <Link
+                                href="/campuses"
+                                className="btn btn-secondary"
+                            >
                                 Batal
                             </Link>
-                            <Button type="submit" variant="primary" isLoading={processing}>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                isLoading={processing}
+                            >
                                 <Save className="w-4 h-4" />
                                 Simpan Kampus
                             </Button>
@@ -204,4 +243,3 @@ export default function CampusCreate({ otherCampusesGeoJson = { type: 'FeatureCo
         </>
     );
 }
-

@@ -152,32 +152,42 @@ export default function MapSidebar({
                                 </div>
                                 <div className="flex justify-between text-[10px] text-gray-500 dark:text-slate-400">
                                     <span>
-                                        RTH Saat Ini:{" "}
+                                        Total Vegetasi:{" "}
                                         <strong>
-                                            {analysis.green_percentage ?? 0}%
-                                        </strong>
+                                            {analysis.vegetated_percentage ?? analysis.green_percentage ?? 0}%
+                                        </strong>{" "}
+                                        <span className="text-[9px] text-gray-400 dark:text-slate-500">(RTH: {analysis.green_percentage ?? 0}%)</span>
                                     </span>
-                                    <strong className="text-sky-600">
+                                    <strong className="text-sky-600 dark:text-sky-400">
                                         {simulatedLayerIds.length > 0
                                             ? `Simulasi: ${simulatedVegPercent}%`
                                             : "Target: 30%"}
                                     </strong>
                                 </div>
-                                <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                                <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden flex relative">
                                     <div
                                         className="h-full bg-emerald-500"
+                                        title={`RTH: ${analysis.green_percentage ?? 0}%`}
                                         style={{
                                             width: `${Math.min(100, analysis.green_percentage ?? 0)}%`,
                                         }}
                                     />
                                     <div
-                                        className="h-full bg-sky-400 animate-pulse absolute"
+                                        className="h-full bg-lime-400"
+                                        title={`Non-RTH: ${(Math.max(0, (analysis.vegetated_percentage ?? 0) - (analysis.green_percentage ?? 0))).toFixed(2)}%`}
                                         style={{
-                                            width: `${Math.min(100 - (analysis.green_percentage ?? 0), simulatedGainPercent)}%`,
-                                            marginTop: "-8px",
-                                            marginLeft: `${Math.min(100, analysis.green_percentage ?? 0)}%`,
+                                            width: `${Math.min(100 - (analysis.green_percentage ?? 0), Math.max(0, (analysis.vegetated_percentage ?? 0) - (analysis.green_percentage ?? 0)))}%`,
                                         }}
                                     />
+                                    {simulatedGainPercent > 0 && (
+                                        <div
+                                            className="h-full bg-sky-400 animate-pulse"
+                                            title={`Simulasi Tambahan: +${simulatedGainPercent}%`}
+                                            style={{
+                                                width: `${Math.min(100 - (analysis.vegetated_percentage ?? 0), simulatedGainPercent)}%`,
+                                            }}
+                                        />
+                                    )}
                                 </div>
                                 <FilterTabs
                                     items={filterItems}

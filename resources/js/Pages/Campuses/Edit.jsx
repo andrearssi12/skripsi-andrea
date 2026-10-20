@@ -1,56 +1,67 @@
-import { useState } from 'react';
-import { useForm, Head, Link } from '@inertiajs/react';
-import Button from '@/components/ui/Button';
-
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import LeafletDrawMap from '@/components/map/LeafletDrawMap';
-import GeoJsonUploader from '@/components/map/GeoJsonUploader';
-import { ArrowLeft, Save, MapPin, Building2 } from 'lucide-react';
+import { useState } from "react";
+import { useForm, Head, Link } from "@inertiajs/react";
+import Button from "@/Components/ui/Button";
+import Input from "@/Components/ui/Input";
+import Textarea from "@/Components/ui/Textarea";
+import LeafletDrawMap from "@/Components/map/LeafletDrawMap";
+import GeoJsonUploader from "@/Components/map/GeoJsonUploader";
+import PageHeader from "@/Components/PageHeader";
+import FormActions from "@/Components/ui/FormActions";
+import { MapPin, Building2, Save } from "lucide-react";
 
 export default function CampusEdit({
     campus,
-    otherCampusesGeoJson = { type: 'FeatureCollection', features: [] },
-    existingLandUsesGeoJson = { type: 'FeatureCollection', features: [] },
+    otherCampusesGeoJson = { type: "FeatureCollection", features: [] },
+    existingLandUsesGeoJson = { type: "FeatureCollection", features: [] },
 }) {
-    const [activeGeometry, setActiveGeometry] = useState(campus.boundary_geometry);
+    const [activeGeometry, setActiveGeometry] = useState(
+        campus.boundary_geometry,
+    );
 
     const { data, setData, put, processing, errors } = useForm({
-        code: campus.code || '',
-        name: campus.name || '',
-        address: campus.address || '',
-        total_area: campus.total_area || '',
-        boundary_geometry: campus.boundary_geometry ? JSON.stringify(campus.boundary_geometry, null, 2) : '',
-        description: campus.description || '',
+        code: campus.code || "",
+        name: campus.name || "",
+        address: campus.address || "",
+        total_area: campus.total_area || "",
+        boundary_geometry: campus.boundary_geometry
+            ? JSON.stringify(campus.boundary_geometry, null, 2)
+            : "",
+        description: campus.description || "",
     });
 
     const handleBoundaryDrawn = (geometry, areaM2) => {
         if (geometry) {
             setActiveGeometry(geometry);
-            setData(prev => ({
+            setData((prev) => ({
                 ...prev,
                 boundary_geometry: JSON.stringify(geometry),
                 total_area: areaM2 > 0 ? String(areaM2) : prev.total_area,
             }));
         } else {
             setActiveGeometry(null);
-            setData(prev => ({ ...prev, boundary_geometry: '' }));
+            setData((prev) => ({ ...prev, boundary_geometry: "" }));
         }
     };
 
     const handleGeoJsonUploaded = ({ geometry, areaM2, suggestedFields }) => {
         setActiveGeometry(geometry);
-        setData(prev => {
+        setData((prev) => {
             const next = {
                 ...prev,
                 boundary_geometry: JSON.stringify(geometry, null, 2),
                 total_area: areaM2 > 0 ? String(areaM2) : prev.total_area,
             };
 
-            if (suggestedFields.name && (!prev.name || prev.name.trim() === '')) {
+            if (
+                suggestedFields.name &&
+                (!prev.name || prev.name.trim() === "")
+            ) {
                 next.name = suggestedFields.name;
             }
-            if (suggestedFields.code && (!prev.code || prev.code.trim() === '')) {
+            if (
+                suggestedFields.code &&
+                (!prev.code || prev.code.trim() === "")
+            ) {
                 next.code = suggestedFields.code;
             }
 
@@ -68,16 +79,11 @@ export default function CampusEdit({
             <Head title={`Edit Kampus: ${campus.name}`} />
 
             <div className="max-w-4xl mx-auto space-y-5">
-
-                <div className="flex items-center gap-3">
-                    <Link href="/campuses" className="btn btn-ghost btn-sm p-2 text-gray-500 dark:text-slate-400">
-                        <ArrowLeft className="w-4 h-4" />
-                    </Link>
-                    <div>
-                        <h1 className="page-title text-xl">Edit Data Kampus</h1>
-                        <p className="page-subtitle">Perbarui identitas dan batas perimeter {campus.name}</p>
-                    </div>
-                </div>
+                <PageHeader
+                    title="Edit Data Kampus"
+                    description={`Perbarui identitas dan batas perimeter ${campus.name}`}
+                    backHref="/campuses"
+                />
 
                 <div className="card p-6 space-y-6">
                     {/* GeoJSON Boundary Uploader */}
@@ -95,7 +101,8 @@ export default function CampusEdit({
                         <label className="form-label flex items-center justify-between">
                             <span className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-slate-200">
                                 <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                Gambar / Edit Garis Batas Wilayah Kampus (Perimeter Boundary)
+                                Gambar / Edit Garis Batas Wilayah Kampus
+                                (Perimeter Boundary)
                             </span>
                         </label>
 
@@ -108,16 +115,25 @@ export default function CampusEdit({
                             otherCampusesGeoJson={otherCampusesGeoJson}
                             height="420px"
                         />
-                        {errors.boundary_geometry && <p className="form-error">{errors.boundary_geometry}</p>}
+                        {errors.boundary_geometry && (
+                            <p className="form-error">
+                                {errors.boundary_geometry}
+                            </p>
+                        )}
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-5 pt-2 border-t border-gray-100 dark:border-slate-800">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5 pt-2 border-t border-gray-100 dark:border-slate-800"
+                    >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Input
                                 label="Kode Kampus"
                                 id="code"
                                 value={data.code}
-                                onChange={(e) => setData('code', e.target.value)}
+                                onChange={(e) =>
+                                    setData("code", e.target.value)
+                                }
                                 error={errors.code}
                                 required
                             />
@@ -125,7 +141,9 @@ export default function CampusEdit({
                                 label="Nama Kampus"
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData("name", e.target.value)
+                                }
                                 error={errors.name}
                                 required
                             />
@@ -138,7 +156,9 @@ export default function CampusEdit({
                                 type="number"
                                 step="0.01"
                                 value={data.total_area}
-                                onChange={(e) => setData('total_area', e.target.value)}
+                                onChange={(e) =>
+                                    setData("total_area", e.target.value)
+                                }
                                 error={errors.total_area}
                                 required
                             />
@@ -146,7 +166,9 @@ export default function CampusEdit({
                                 label="Alamat Kampus"
                                 id="address"
                                 value={data.address}
-                                onChange={(e) => setData('address', e.target.value)}
+                                onChange={(e) =>
+                                    setData("address", e.target.value)
+                                }
                                 error={errors.address}
                             />
                         </div>
@@ -162,9 +184,14 @@ export default function CampusEdit({
                                     rows={4}
                                     value={data.boundary_geometry}
                                     onChange={(e) => {
-                                        setData('boundary_geometry', e.target.value);
+                                        setData(
+                                            "boundary_geometry",
+                                            e.target.value,
+                                        );
                                         try {
-                                            const g = JSON.parse(e.target.value);
+                                            const g = JSON.parse(
+                                                e.target.value,
+                                            );
                                             setActiveGeometry(g);
                                         } catch (err) {}
                                     }}
@@ -178,15 +205,24 @@ export default function CampusEdit({
                             id="description"
                             rows={3}
                             value={data.description}
-                            onChange={(e) => setData('description', e.target.value)}
+                            onChange={(e) =>
+                                setData("description", e.target.value)
+                            }
                             error={errors.description}
                         />
 
                         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
-                            <Link href="/campuses" className="btn btn-secondary">
+                            <Link
+                                href="/campuses"
+                                className="btn btn-secondary"
+                            >
                                 Batal
                             </Link>
-                            <Button type="submit" variant="primary" isLoading={processing}>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                isLoading={processing}
+                            >
                                 <Save className="w-4 h-4" />
                                 Simpan Perubahan
                             </Button>
@@ -197,4 +233,3 @@ export default function CampusEdit({
         </>
     );
 }
-

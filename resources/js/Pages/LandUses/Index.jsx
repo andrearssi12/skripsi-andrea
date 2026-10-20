@@ -1,20 +1,23 @@
 import { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
-import Button from "@/components/ui/Button";
-import Pagination from "@/components/ui/Pagination";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import EmptyState from "@/components/ui/EmptyState";
+import Button from "@/Components/ui/Button";
+import Pagination from "@/Components/ui/Pagination";
+import ConfirmDialog from "@/Components/ui/ConfirmDialog";
+import EmptyState from "@/Components/ui/EmptyState";
 import PageHeader from "@/Components/PageHeader";
 import DataTable from "@/Components/DataTable";
-import { formatArea, getConditionBadge, getGreenStatusBadge } from "@/lib/utils";
-import { TreePine, Plus, Search, Download, Upload, RotateCcw, Eye, Edit, Trash2 } from "lucide-react";
+import FilterTabs from "@/Components/common/FilterTabs";
+import { formatArea, formatDate, getConditionBadge, getGreenStatusBadge } from "@/lib/utils";
+import { TreePine, Plus, Search, Upload, RotateCcw, Eye, Edit, Trash2, Archive, RotateCw } from "lucide-react";
 
 export default function LandUseIndex({
     landUses,
     campuses = [],
     categories = [],
+    counts = {},
     filters: initialFilters = {},
 }) {
+    const [statusTab, setStatusTab] = useState(initialFilters.status || "active");
     const [filters, setFilters] = useState({
         search: initialFilters.search || "",
         campus_id: initialFilters.campus_id || "",
@@ -23,12 +26,19 @@ export default function LandUseIndex({
         condition: initialFilters.condition || "",
     });
 
-    const [deleteTarget, setDeleteTarget] = useState(null);
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [archiveTarget, setArchiveTarget] = useState(null);
+    const [restoreTarget, setRestoreTarget] = useState(null);
+    const [forceDeleteTarget, setForceDeleteTarget] = useState(null);
+    const [actionLoading, setActionLoading] = useState(false);
 
     const handleFilterSubmit = (e) => {
         e?.preventDefault();
-        router.get("/land-uses", filters, { preserveState: true });
+        router.get("/land-uses", { ...filters, status: statusTab }, { preserveState: true });
+    };
+
+    const handleTabChange = (newStatus) => {
+        setStatusTab(newStatus);
+        router.get("/land-uses", { ...filters, status: newStatus }, { preserveState: true });
     };
 
     const handleReset = () => {
@@ -40,29 +50,67 @@ export default function LandUseIndex({
             condition: "",
         };
         setFilters(resetFilters);
-        router.get("/land-uses", {}, { preserveState: true });
+        router.get("/land-uses", { status: statusTab }, { preserveState: true });
     };
 
-    const handleDelete = () => {
-        if (!deleteTarget) return;
-        setIsDeleting(true);
-        router.delete(`/land-uses/${deleteTarget.id}`, {
+    const handleArchive = () => {
+        if (!archiveTarget) return;
+        setActionLoading(true);
+        router.delete(`/land-uses/${archiveTarget.id}`, {
             onFinish: () => {
-                setIsDeleting(false);
-                setDeleteTarget(null);
+                setActionLoading(false);
+                setArchiveTarget(null);
             },
         });
     };
+
+    const handleRestore = () => {
+        if (!restoreTarget) return;
+        setActionLoading(true);
+        router.post(`/land-uses/${restoreTarget.id}/restore`, {}, {
+            onFinish: () => {
+                setActionLoading(false);
+                setRestoreTarget(null);
+            },
+        });
+    };
+
+    const handleForceDelete = () => {
+        if (!forceDeleteTarget) return;
+        setActionLoading(true);
+        router.delete(`/land-uses/${forceDeleteTarget.id}/force-delete`, {
+            onFinish: () => {
+                setActionLoading(false);
+                setForceDeleteTarget(null);
+            },
+        });
+    };
+
+    const isArchivedTab = statusTab === "archived";
+
+    const statusTabs = [
+        {
+            key: "active",
+            label: "Aset Aktif",
+            count: counts.active ?? 0,
+            activeClass: "bg-emerald-600 text-white",
+        },
+        {
+            key: "archived",
+            label: "Arsip & Riwayat",
+            count: counts.archived ?? 0,
+            activeClass: "bg-amber-600 text-white",
+        },
+    ];
 
     return (
         <>
             <Head title="Data Penggunaan Lahan - Web GIS UAD" />
 
             <div className="space-y-5">
-
                 <PageHeader
                     title="Data Penggunaan Lahan (Spasial)"
-                    description="Kelola seluruh poligon objek kampus, zonasi hijau, dan atribut luas"
+                    description="Kelola seluruh poligon objek kampus, zonasi hijau, atribut luas, dan riwayat arsip"
                     actions={
                         <>
                             <Link href="/land-uses/import">
@@ -80,6 +128,23 @@ export default function LandUseIndex({
                         </>
                     }
                 />
+
+                {/* Status Tabs (Aset Aktif vs Arsip & Riwayat) */}
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                    <FilterTabs
+                        items={statusTabs}
+                        value={statusTab}
+                        onChange={handleTabChange}
+                        className="w-full sm:w-auto"
+                    />
+
+                    {isArchivedTab && (
+                        <div className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5">
+                            <Archive className="w-4 h-4" />
+                            <span>Menampilkan aset-aset lahan yang telah diarsipkan. Anda dapat memulihkannya kembali kapan saja.</span>
+                        </div>
+                    )}
+                </div>
 
                 {/* Filters */}
                 <div className="card p-4 space-y-3">
@@ -206,31 +271,65 @@ export default function LandUseIndex({
                                 </span>
                               ),
                             },
+                            ...(isArchivedTab ? [
+                                {
+                                    key: "deleted_at",
+                                    label: "Waktu Diarsipkan",
+                                    render: (row) => (
+                                        <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                                            {formatDate(row.deleted_at)}
+                                        </span>
+                                    ),
+                                }
+                            ] : []),
                             { key: "actions", label: "Aksi", className: "text-right",
                               render: (row) => (
                                 <div className="flex items-center justify-end gap-1">
-                                    <Link
-                                        href={`/land-uses/${row.id}`}
-                                        className="btn btn-ghost btn-sm p-1.5 text-gray-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400"
-                                        title="Detail"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                    </Link>
-                                    <Link
-                                        href={`/land-uses/${row.id}/edit`}
-                                        className="btn btn-ghost btn-sm p-1.5 text-gray-600 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-400"
-                                        title="Edit"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                    </Link>
-                                    <button
-                                        type="button"
-                                        onClick={() => setDeleteTarget(row)}
-                                        className="btn btn-ghost btn-sm p-1.5 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400"
-                                        title="Hapus"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    {!isArchivedTab ? (
+                                        <>
+                                            <Link
+                                                href={`/land-uses/${row.id}`}
+                                                className="btn btn-ghost btn-sm p-1.5 text-gray-600 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400"
+                                                title="Detail"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </Link>
+                                            <Link
+                                                href={`/land-uses/${row.id}/edit`}
+                                                className="btn btn-ghost btn-sm p-1.5 text-gray-600 dark:text-slate-400 hover:text-blue-700 dark:hover:text-blue-400"
+                                                title="Edit"
+                                            >
+                                                <Edit className="w-4 h-4" />
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={() => setArchiveTarget(row)}
+                                                className="btn btn-ghost btn-sm p-1.5 text-gray-400 dark:text-slate-500 hover:text-amber-600 dark:hover:text-amber-400"
+                                                title="Arsipkan"
+                                            >
+                                                <Archive className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                type="button"
+                                                onClick={() => setRestoreTarget(row)}
+                                                className="btn btn-ghost btn-sm p-1.5 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300"
+                                                title="Pulihkan dari Arsip"
+                                            >
+                                                <RotateCw className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForceDeleteTarget(row)}
+                                                className="btn btn-ghost btn-sm p-1.5 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                                                title="Hapus Permanen"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                               ),
                             },
@@ -239,12 +338,20 @@ export default function LandUseIndex({
                         emptyState={
                             <EmptyState
                                 icon={TreePine}
-                                title="Tidak ada data objek lahan"
-                                description="Gunakan tombol Tambah Objek atau Import GeoJSON untuk memasukkan data spasial."
-                                action={{
-                                    label: "Tambah Objek Lahan",
-                                    onClick: () => router.get("/land-uses/create"),
-                                }}
+                                title={isArchivedTab ? "Belum ada aset lahan yang diarsipkan" : "Tidak ada data objek lahan"}
+                                description={
+                                    isArchivedTab
+                                        ? "Semua data penggunaan lahan masih aktif dan belum ada yang masuk ke arsip riwayat."
+                                        : "Gunakan tombol Tambah Objek atau Import GeoJSON untuk memasukkan data spasial."
+                                }
+                                action={
+                                    !isArchivedTab
+                                        ? {
+                                              label: "Tambah Objek Lahan",
+                                              onClick: () => router.get("/land-uses/create"),
+                                          }
+                                        : undefined
+                                }
                             />
                         }
                     />
@@ -252,14 +359,40 @@ export default function LandUseIndex({
                 </div>
             </div>
 
+            {/* Modal Konfirmasi Arsip */}
             <ConfirmDialog
-                isOpen={Boolean(deleteTarget)}
-                onClose={() => setDeleteTarget(null)}
-                onConfirm={handleDelete}
-                title="Hapus Objek Lahan"
-                message={`Apakah Anda yakin ingin menghapus "${deleteTarget?.name}"? Objek ini tidak akan ditampilkan lagi pada peta interaktif.`}
-                confirmLabel="Hapus Objek"
-                isLoading={isDeleting}
+                isOpen={Boolean(archiveTarget)}
+                onClose={() => setArchiveTarget(null)}
+                onConfirm={handleArchive}
+                title="Arsipkan Objek Lahan"
+                message={`Apakah Anda yakin ingin mengarsipkan aset "${archiveTarget?.name}"? Objek ini akan dipindahkan ke tab Arsip & Riwayat dan tidak ditampilkan di peta aktif.`}
+                confirmLabel="Arsipkan"
+                confirmVariant="danger"
+                isLoading={actionLoading}
+            />
+
+            {/* Modal Konfirmasi Pulihkan */}
+            <ConfirmDialog
+                isOpen={Boolean(restoreTarget)}
+                onClose={() => setRestoreTarget(null)}
+                onConfirm={handleRestore}
+                title="Pulihkan Objek Lahan"
+                message={`Apakah Anda ingin mengaktifkan kembali aset "${restoreTarget?.name}" ke peta spasial kampus?`}
+                confirmLabel="Pulihkan Aset"
+                confirmVariant="primary"
+                isLoading={actionLoading}
+            />
+
+            {/* Modal Konfirmasi Hapus Permanen */}
+            <ConfirmDialog
+                isOpen={Boolean(forceDeleteTarget)}
+                onClose={() => setForceDeleteTarget(null)}
+                onConfirm={handleForceDelete}
+                title="Hapus Permanen Objek Lahan"
+                message={`PERINGATAN: Tindakan ini tidak dapat dibatalkan. Objek "${forceDeleteTarget?.name}" akan dihapus permanen dari basis data.`}
+                confirmLabel="Hapus Permanen"
+                confirmVariant="danger"
+                isLoading={actionLoading}
             />
         </>
     );

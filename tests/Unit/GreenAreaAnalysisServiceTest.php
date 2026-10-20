@@ -74,6 +74,9 @@ class GreenAreaAnalysisServiceTest extends TestCase
         $this->assertFalse($result['is_achieved']);
         $this->assertEquals(10.00, $result['gap_percentage']);
         $this->assertEquals(1000.00, $result['gap_area_size']);
+        $this->assertTrue($result['is_vegetated_achieved']);
+        $this->assertEquals(0.00, $result['vegetated_gap_percentage']);
+        $this->assertEquals(0.00, $result['vegetated_gap_area_size']);
         $this->assertEquals('Target Belum Tercapai', $result['status_text']);
     }
 
